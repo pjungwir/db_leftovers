@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "db_leftovers"
   gem.homepage = "http://github.com/pjungwir/db_leftovers"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = 'Used to define indexes and foreign keys for your Rails app'
+  gem.description = 'Used to define indexes and foreign keys for your Rails app'
   gem.email = "pj@illuminatedcomputing.com"
   gem.authors = ["Paul A. Jungwirth"]
   # dependencies defined in Gemfile
