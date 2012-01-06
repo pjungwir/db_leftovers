@@ -4,7 +4,9 @@ source "http://rubygems.org"
 #   gem "activesupport", ">= 2.3.5"
 
 gem 'rails', '~>3.0.0'
-gem 'rake'
+# gem 'rake'
+# gem 'activemodel', '= 3.0.11'
+# gem 'activesupport', '= 3.0.11'
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
