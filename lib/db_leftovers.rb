@@ -4,7 +4,7 @@ module DBLeftovers
 
   class RakeTie < Rails::Railtie
     rake_tasks do
-      load 'takes/leftovers.rake'
+      load 'tasks/leftovers.rake'
     end
   end
 

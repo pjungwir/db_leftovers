@@ -18,7 +18,11 @@ Jeweler::Tasks.new do |gem|
   gem.homepage = "http://github.com/pjungwir/db_leftovers"
   gem.license = "MIT"
   gem.summary = 'Used to define indexes and foreign keys for your Rails app'
-  gem.description = 'Used to define indexes and foreign keys for your Rails app'
+  gem.description = <<-EOT
+        Define indexes and foreign keys for your Rails app
+        in one place using an easy-to-read DSL,
+        then run a rake task to bring your database up-to-date.
+  EOT
   gem.email = "pj@illuminatedcomputing.com"
   gem.authors = ["Paul A. Jungwirth"]
   # dependencies defined in Gemfile
