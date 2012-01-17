@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "db_leftovers.gemspec",
     "lib/db_leftovers.rb",
     "lib/db_leftovers/dsl.rb",
     "lib/tasks/leftovers.rake",
