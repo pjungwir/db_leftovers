@@ -94,12 +94,13 @@ module DBLeftovers
 
   class DSL
     def initialize
+      @db = DatabaseInterface.new
       @indexes_by_table = {}      # Set from the DSL
-      @old_indexes = lookup_all_indexes
+      @old_indexes = @db.lookup_all_indexes
       @new_indexes = {}
       
       @foreign_keys_by_table = {}   # Set from the DSL
-      @old_foreign_keys = lookup_all_foreign_keys
+      @old_foreign_keys = @db.lookup_all_foreign_keys
       @new_foreign_keys = {}
     end
 
@@ -130,7 +131,7 @@ module DBLeftovers
           if index_exists?(idx)
             puts "Index already exists: #{idx.index_name} on #{idx.table_name}"
           else
-            execute_add_index(idx)
+            @db.execute_add_index(idx)
             puts "Created index: #{idx.index_name} on #{idx.table_name}"
           end
           @new_indexes[truncate_index_name(idx.index_name)] = table_name
@@ -141,7 +142,7 @@ module DBLeftovers
       @old_indexes.each do |index_name, table_name|
         if not @new_indexes[index_name]
           # puts "#{index_name} #{table_name}"
-          execute_drop_index(table_name, index_name)
+          @db.execute_drop_index(table_name, index_name)
           puts "Dropped index: #{index_name} on #{table_name}"
         end
       end
@@ -154,7 +155,7 @@ module DBLeftovers
           if foreign_key_exists?(fk)
             puts "Foreign Key already exists: #{fk.constraint_name} on #{fk.from_table}"
           else
-            execute_add_foreign_key(fk)
+            @db.execute_add_foreign_key(fk)
             puts "Created foreign key: #{fk.constraint_name} on #{fk.from_table}"
           end
           @new_foreign_keys[fk.constraint_name] = fk
@@ -164,7 +165,7 @@ module DBLeftovers
       # Now drop any old foreign keys that are no longer in the definition file:
       @old_foreign_keys.each do |constraint_name, fk|
         if not @new_foreign_keys[constraint_name]
-          execute_drop_foreign_key(fk.from_table, fk.from_column)
+          @db.execute_drop_foreign_key(constraint_name, fk.from_table, fk.from_column)
           puts "Dropped foreign key: #{constraint_name} on #{fk.from_table}"
         end
       end
@@ -181,6 +182,26 @@ module DBLeftovers
       t = (@foreign_keys_by_table[fk.from_table] ||= [])
       t << fk
     end
+
+    def truncate_index_name(index_name)
+      index_name[0,63]
+    end
+
+    def index_exists?(idx)
+      @old_indexes[truncate_index_name(idx.index_name)]
+    end
+
+    def foreign_key_exists?(fk)
+      @old_foreign_keys[fk.constraint_name]
+    end
+
+    def name_constraint(from_table, from_column)
+      "fk_#{from_table}_#{from_column}"
+    end
+
+  end
+
+  class DatabaseInterface
 
     def lookup_all_indexes
       ret = {}
@@ -224,18 +245,6 @@ module DBLeftovers
       return ret
     end
 
-    def truncate_index_name(index_name)
-      index_name[0,63]
-    end
-
-    def index_exists?(idx)
-      @old_indexes[truncate_index_name(idx.index_name)]
-    end
-
-    def foreign_key_exists?(fk)
-      @old_foreign_keys[fk.constraint_name]
-    end
-
     def execute_add_index(idx)
       unique = idx.unique? ? 'UNIQUE' : ''
       where = idx.where_clause.present? ? "WHERE #{idx.where_clause}" : ''
@@ -246,34 +255,33 @@ module DBLeftovers
         (#{idx.column_names.join(', ')})
         #{where}
       EOQ
-      ActiveRecord::Base.connection.execute(sql)
+      execute_sql(sql)
     end
 
     def execute_drop_index(table_name, index_name)
       sql = <<-EOQ
           DROP INDEX #{index_name}
       EOQ
-      ActiveRecord::Base.connection.execute(sql)
+      execute_sql(sql)
     end
 
     def execute_add_foreign_key(fk)
       on_delete = "ON DELETE CASCADE" if fk.cascade
       on_delete = "ON DELETE SET NULL" if fk.set_null
-      ActiveRecord::Base.connection.execute %{ALTER TABLE #{fk.from_table}
+      execute_sql %{ALTER TABLE #{fk.from_table}
                 ADD CONSTRAINT #{fk.constraint_name}
                 FOREIGN KEY (#{fk.from_column})
                 REFERENCES #{fk.to_table} (#{fk.to_column})
                 #{on_delete}}
     end
 
-    def execute_drop_foreign_key(from_table, from_column)
-      constraint_name = name_constraint(from_table, from_column)
-      ActiveRecord::Base.connection.execute %{ALTER TABLE #{from_table}
+    def execute_drop_foreign_key(constraint_name, from_table, from_column)
+      execute_sql %{ALTER TABLE #{from_table}
                 DROP CONSTRAINT #{constraint_name}}
     end
 
-    def name_constraint(from_table, from_column)
-      "fk_#{from_table}_#{from_column}"
+    def execute_sql(sql)
+      ActiveRecord::Base.connection.execute(sql)
     end
 
   end
