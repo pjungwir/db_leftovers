@@ -29,11 +29,11 @@ module DBLeftovers
       opts.keys.each do |k|
         raise "Unknown option: #{k}" unless [:where, :unique, :name].include?(k)
       end
-      @table_name = table_name
-      @column_names = column_names
+      @table_name = table_name.to_s
+      @column_names = [column_names].flatten.map{|x| x.to_s}
       @where_clause = opts[:where]
       @unique = opts[:unique]
-      @index_name = opts[:name] || choose_name(table_name, column_names)
+      @index_name = opts[:name] || choose_name(@table_name, @column_names)
     end
 
     def unique?
