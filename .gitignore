@@ -39,7 +39,8 @@ pkg
 #.\#*
 
 # For vim:
-#*.swp
+.*.swp
+.*.swo
 
 # For redcar:
 #.redcar
@@ -48,3 +49,5 @@ pkg
 #*.rbc
 
 tmp
+README.html
+TODO
