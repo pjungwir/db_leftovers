@@ -99,6 +99,6 @@ Contributing to db\_leftovers
 Copyright
 ---------
 
-Copyright (c) 2012 Paul A. Jungwirth. See LICENSE.txt for
-further details.
+Copyright (c) 2012 Paul A. Jungwirth.
+See LICENSE.txt for further details.
 
