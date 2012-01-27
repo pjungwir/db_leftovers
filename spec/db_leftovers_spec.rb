@@ -58,6 +58,15 @@ describe DBLeftovers do
     DBLeftovers::DatabaseInterface.sqls.should be_empty
   end
 
+  it "should allow an empty table definition" do
+    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::Definition.define do
+      table :books do
+      end
+    end
+    DBLeftovers::DatabaseInterface.sqls.should be_empty
+  end
+
   it "should create indexes on an empty database" do
     DBLeftovers::DatabaseInterface.starts_with({}, {})
     DBLeftovers::Definition.define do
@@ -78,12 +87,72 @@ describe DBLeftovers do
     EOQ
   end
 
+
+
+  it "should create table-prefixed indexes on an empty database" do
+    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::Definition.define do
+      table :books do
+        index :shelf_id
+        index :publisher_id, :where => 'published'
+      end
+    end
+    DBLeftovers::DatabaseInterface.sqls.size.should == 2
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        CREATE INDEX index_books_on_shelf_id
+        ON books
+        (shelf_id)
+    EOQ
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        CREATE INDEX index_books_on_publisher_id
+        ON books
+        (publisher_id)
+        WHERE published
+    EOQ
+  end
+
+
+
   it "should create foreign keys on an empty database" do
     DBLeftovers::DatabaseInterface.starts_with({}, {})
     DBLeftovers::Definition.define do
       foreign_key :books, :shelf_id, :shelves
       foreign_key :books, :publisher_id, :publishers, :id, :set_null => true
       foreign_key :books, :author_id, :authors, :id, :cascade => true
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(3).items
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books
+        ADD CONSTRAINT fk_books_shelf_id
+        FOREIGN KEY (shelf_id)
+        REFERENCES shelves (id)
+    EOQ
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books
+        ADD CONSTRAINT fk_books_publisher_id
+        FOREIGN KEY (publisher_id)
+        REFERENCES publishers (id)
+        ON DELETE SET NULL
+    EOQ
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books
+        ADD CONSTRAINT fk_books_author_id
+        FOREIGN KEY (author_id)
+        REFERENCES authors (id)
+        ON DELETE CASCADE
+    EOQ
+  end
+
+
+
+  it "should create table-prefixed foreign keys on an empty database" do
+    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::Definition.define do
+      table :books do
+        foreign_key :shelf_id, :shelves
+        foreign_key :publisher_id, :publishers, :id, :set_null => true
+        foreign_key :author_id, :authors, :id, :cascade => true
+      end
     end
     DBLeftovers::DatabaseInterface.sqls.should have(3).items
     DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
@@ -126,6 +195,24 @@ describe DBLeftovers do
 
 
 
+  it "should not create table-prefixed indexes when they already exist" do
+    DBLeftovers::DatabaseInterface.starts_with({
+      :index_books_on_shelf_id => DBLeftovers::Index.new(:books, :index_id),
+      :index_books_on_publisher_id => DBLeftovers::Index.new(
+        :books, :publisher_id, :where => 'published')
+    }, {})
+    DBLeftovers::Definition.define do
+      table :books do
+        index :shelf_id
+        index :publisher_id, :where => 'published'
+      end
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(0).items
+  end
+
+
+
+
   it "should not create foreign keys when they already exist" do
     DBLeftovers::DatabaseInterface.starts_with({}, {
       :fk_books_shelf_id => DBLeftovers::ForeignKey.new('fk_books_shelf_id',
@@ -133,6 +220,21 @@ describe DBLeftovers do
     })
     DBLeftovers::Definition.define do
       foreign_key :books, :shelf_id, :shelves
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(0).items
+  end
+
+
+
+  it "should not create table-prefixed foreign keys when they already exist" do
+    DBLeftovers::DatabaseInterface.starts_with({}, {
+      :fk_books_shelf_id => DBLeftovers::ForeignKey.new('fk_books_shelf_id',
+                                                        'books', 'shelf_id', 'shelves', 'id')
+    })
+    DBLeftovers::Definition.define do
+      table :books do
+        foreign_key :shelf_id, :shelves
+      end
     end
     DBLeftovers::DatabaseInterface.sqls.should have(0).items
   end
@@ -172,5 +274,62 @@ describe DBLeftovers do
     EOQ
   end
 
+
+
+  it "should support creating multi-column indexes" do
+    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::Definition.define do
+      index :books, [:year, :title]
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(1).item
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        CREATE INDEX index_books_on_year_and_title
+        ON books
+        (year, title)
+    EOQ
+  end
+
+  
+
+  it "should support dropping multi-column indexes" do
+    DBLeftovers::DatabaseInterface.starts_with({
+      :index_books_on_year_and_title => DBLeftovers::Index.new(:books, [:year, :title])
+    }, {})
+    DBLeftovers::Definition.define do
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(1).item
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        DROP INDEX index_books_on_year_and_title
+    EOQ
+  end
+
+  
+
+  it "should allow mixing indexes and foreign keys in the same table" do
+    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::Definition.define do
+      table :books do
+        index :author_id
+        foreign_key :author_id, :authors, :id
+      end
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(2).items
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        CREATE INDEX index_books_on_author_id
+        ON books
+        (author_id)
+    EOQ
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books
+        ADD CONSTRAINT fk_books_author_id
+        FOREIGN KEY (author_id)
+        REFERENCES authors (id)
+    EOQ
+  end
+
+
+
+  it "should allow separating indexes and foreign keys from the same table" do
+  end
 
 end
