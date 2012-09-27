@@ -4,26 +4,6 @@ module DBLeftovers
 
     def lookup_all_indexes
       ret = {}
-=begin
-      sql = <<-EOQ
-          SELECT  n.nspname as "Schema", c.relname as "Name",
-                  CASE c.relkind WHEN 'r' THEN 'table' WHEN 'v' THEN 'view' WHEN 'i' THEN 'index' WHEN 'S' THEN 'sequence' WHEN 's' THEN 'special' END as "Type",
-                  u.usename as "Owner",
-                  c2.relname as "Table"
-          FROM    pg_catalog.pg_class c
-                  JOIN pg_catalog.pg_index i ON i.indexrelid = c.oid
-                  JOIN pg_catalog.pg_class c2 ON i.indrelid = c2.oid
-                  LEFT JOIN pg_catalog.pg_user u ON u.usesysid = c.relowner
-                  LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-          WHERE   c.relkind IN ('i','')
-          AND     n.nspname NOT IN ('pg_catalog', 'pg_toast')
-          AND     pg_catalog.pg_table_is_visible(c.oid)
-          AND     c.relname NOT LIKE '%_pkey'
-          AND     c2.relname NOT IN ('delayed_jobs', 'schema_migrations')
-          ORDER BY 1,2;
-      EOQ
-      ActiveRecord::Base.connection.select_rows(sql).each do |schema, index_name, object_type, owner, table_name|
-=end
       sql = <<-EOQ
           SELECT  ix.indexrelid,
                   ix.indrelid,
@@ -48,7 +28,7 @@ module DBLeftovers
                     i.relname,
                     ix.indisunique,
                     ix.indexrelid,
-                    ix.indrelid
+                    ix.indrelid,
                     ix.indkey,
                     ix.indpred,
           ORDER BY t.relname, i.relname
