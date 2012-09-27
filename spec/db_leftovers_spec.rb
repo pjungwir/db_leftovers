@@ -345,7 +345,29 @@ describe DBLeftovers do
 
 
 
-  it "should allow separating indexes and foreign keys from the same table"
+  it "should allow separating indexes and foreign keys from the same table" do
+    DBLeftovers::DatabaseInterface.starts_with
+    DBLeftovers::Definition.define do
+      table :books do
+        index :author_id
+      end
+      table :books do
+        foreign_key :author_id, :authors, :id
+      end
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(2).items
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        CREATE INDEX index_books_on_author_id
+        ON books
+        (author_id)
+    EOQ
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books
+        ADD CONSTRAINT fk_books_author_id
+        FOREIGN KEY (author_id)
+        REFERENCES authors (id)
+    EOQ
+  end
 
   it "should reject invalid foreign key options" do
     lambda {
