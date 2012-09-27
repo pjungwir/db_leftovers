@@ -30,7 +30,7 @@ module DBLeftovers
                     ix.indexrelid,
                     ix.indrelid,
                     ix.indkey,
-                    ix.indpred,
+                    ix.indpred
           ORDER BY t.relname, i.relname
       EOQ
       ActiveRecord::Base.connection.select_rows(sql).each do |indexrelid, indrelid, table_name, index_name, is_unique, column_numbers, where_clause|
