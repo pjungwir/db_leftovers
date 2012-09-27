@@ -34,6 +34,7 @@ module DBLeftovers
           ORDER BY t.relname, i.relname
       EOQ
       ActiveRecord::Base.connection.select_rows(sql).each do |indexrelid, indrelid, table_name, index_name, is_unique, column_numbers, where_clause|
+        where_clause = where_clause.gsub(/^\((.*)\)$/, '\1') if where_clause    # strip surrounding parens
         ret[index_name] = Index.new(
           table_name,
           column_names_for_index(indrelid, column_numbers.split(",")),
