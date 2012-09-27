@@ -78,6 +78,14 @@ db\_leftovers comes with a Rake task named `db:leftovers`. So you can update you
 
     rake db:leftovers
 
+To print messages even about indexes/foreign keys/constraints that haven't changed, you can say:
+
+    rake db:leftovers VERBOSE=true
+
+or
+
+    rake db:leftovers DB_LEFTOVERS_VERBOSE=true
+
 
 Known Issues
 ------------
@@ -100,11 +108,7 @@ Known Issues
   I'm working on doing the same thing for foreign keys/constraints,
   but it's not done just yet.
   
-* If your database is mostly up-to-date, then running the Rake task will spam
-  you with messages about how this index and that foreign key already exist.
-  These should be hidden by default and shown only if you request a higher
-  verbosity.
- 
+
 
 Contributing to db\_leftovers
 -----------------------------
