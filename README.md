@@ -86,7 +86,7 @@ Known Issues
 * db\_leftovers only supports PostgreSQL databases.
   If you want to add support for something else, just send me a pull request!
 
-* db\_leftovers will not notice if an index/foreign key/constraint definition changes.
+* db\_leftovers will not notice if an foreign key/constraint definition changes.
   Right now it only checks for existence/non-existence.
   You can get around this by adding a version number to your constraint names,
   so if you want to force books to have at least 12 pages, you can say this:
@@ -94,6 +94,12 @@ Known Issues
   `check :books_have_positive_pages2, 'page_count >= 12'`
 
   Then the old constraint will be dropped and the new one will be added.
+
+  However, db\_leftovers *does* check for index definitions, so if you
+  make an existing index unique, add a column, remove a WHERE clause, or
+  anything else, it will notice and drop and re-create the index.
+  I'm working on doing the same thing for foreign keys/constraints,
+  but it's not done just yet.
   
 * If your database is mostly up-to-date, then running the Rake task will spam
   you with messages about how this index and that foreign key already exist.
