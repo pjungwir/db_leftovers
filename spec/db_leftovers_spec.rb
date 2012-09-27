@@ -363,4 +363,20 @@ describe DBLeftovers do
     }.should raise_error(RuntimeError, "Unknown on_delete option: panic")
   end
 
+  it "should give good a error message if you use the old :set_null option" do
+    lambda {
+      DBLeftovers::Definition.define do
+        foreign_key :books, :author_id, :authors, :id, :set_null => true
+      end
+    }.should raise_error(RuntimeError, "`:set_null => true` should now be `:on_delete => :set_null`")
+  end
+
+  it "should give good a error message if you use the old :cascade option" do
+    lambda {
+      DBLeftovers::Definition.define do
+        foreign_key :books, :author_id, :authors, :id, :cascade => true
+      end
+    }.should raise_error(RuntimeError, "`:cascade => true` should now be `:on_delete => :cascade`")
+  end
+
 end

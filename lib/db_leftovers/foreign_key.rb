@@ -8,6 +8,8 @@ module DBLeftovers
         :on_delete => nil
       }.merge(opts)
       opts.keys.each do |k|
+        raise "`:set_null => true` should now be `:on_delete => :set_null`" if k.to_s == 'set_null'
+        raise "`:cascade => true` should now be `:on_delete => :cascade`"   if k.to_s == 'cascade'
         raise "Unknown option: #{k}" unless [:on_delete].include?(k)
       end
       raise "Unknown on_delete option: #{opts[:on_delete]}" unless [nil, :set_null, :cascade].include?(opts[:on_delete])
