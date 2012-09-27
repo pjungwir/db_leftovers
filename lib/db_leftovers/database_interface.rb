@@ -37,7 +37,7 @@ module DBLeftovers
         ret[index_name] = Index.new(
           table_name,
           column_names_for_index(indrelid, column_numbers.split(",")),
-          unique: is_unique,
+          unique: is_unique == 't',
           where: where_clause,
           name: index_name
         )

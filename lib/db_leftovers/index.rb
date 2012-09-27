@@ -16,8 +16,8 @@ module DBLeftovers
       @table_name = table_name.to_s
       @column_names = [column_names].flatten.map{|x| x.to_s}
       @where_clause = opts[:where]
-      @unique = opts[:unique]
-      @index_name = opts[:name] || choose_name(@table_name, @column_names)
+      @unique = !!opts[:unique]
+      @index_name = (opts[:name] || choose_name(@table_name, @column_names)).to_s
     end
 
     def unique?
@@ -30,6 +30,10 @@ module DBLeftovers
       other.index_name == index_name and
       other.where_clause == where_clause and
       other.unique == unique
+    end
+
+    def to_s
+      "<#{@index_name}: #{@table_name}.[#{column_names.join(",")}] unique=#{@unique}, where=#{@where_clause}>"
     end
 
     private 
