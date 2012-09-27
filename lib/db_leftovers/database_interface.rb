@@ -4,6 +4,7 @@ module DBLeftovers
 
     def lookup_all_indexes
       ret = {}
+=begin
       sql = <<-EOQ
           SELECT  n.nspname as "Schema", c.relname as "Name",
                   CASE c.relkind WHEN 'r' THEN 'table' WHEN 'v' THEN 'view' WHEN 'i' THEN 'index' WHEN 'S' THEN 'sequence' WHEN 's' THEN 'special' END as "Type",
@@ -22,10 +23,63 @@ module DBLeftovers
           ORDER BY 1,2;
       EOQ
       ActiveRecord::Base.connection.select_rows(sql).each do |schema, index_name, object_type, owner, table_name|
-        ret[index_name] = table_name
+=end
+      sql = <<-EOQ
+          SELECT  ix.indexrelid,
+                  ix.indrelid,
+                  t.relname AS table_name,
+                  i.relname AS index_name,
+                  ix.indisunique AS is_unique,
+                  array_to_string(ix.indkey, ',') AS column_numbers,
+                  pg_get_expr(ix.indpred, ix.indrelid) AS where_clause
+          FROM    pg_class t,
+                  pg_class i,
+                  pg_index ix,
+                  pg_namespace n
+          WHERE   t.oid = ix.indrelid
+          AND     n.oid = t.relnamespace
+          AND     i.oid = ix.indexrelid
+          AND     t.relkind = 'r'
+          AND     n.nspname NOT IN ('pg_catalog', 'pg_toast')
+          AND     pg_catalog.pg_table_is_visible(t.oid)
+          AND     t.relname NOT IN ('delayed_jobs', 'schema_migrations')
+          AND     NOT ix.indisprimary
+          GROUP BY  t.relname,
+                    i.relname,
+                    ix.indisunique,
+                    ix.indexrelid,
+                    ix.indrelid
+                    ix.indkey,
+                    ix.indpred,
+          ORDER BY t.relname, i.relname
+      EOQ
+      ActiveRecord::Base.connection.select_rows(sql).each do |indexrelid, indrelid, table_name, index_name, is_unique, column_numbers, where_clause|
+        ret[index_name] = Index.new(
+          table_name,
+          column_names_for_index(indrelid, column_numbers.split(",")),
+          unique: is_unique,
+          where: where_clause,
+          name: index_name
+        )
       end
       return ret
     end
+
+
+
+    def column_names_for_index(table_id, column_numbers)
+      column_numbers.map do |c|
+        sql = <<-EOQ
+            SELECT  attname
+            FROM    pg_attribute
+            WHERE   attrelid = #{table_id}
+            AND     attnum = #{c}
+        EOQ
+        ActiveRecord::Base.connection.select_value(sql)
+      end
+    end
+
+
 
     def lookup_all_foreign_keys
       ret = {}
@@ -109,6 +163,7 @@ module DBLeftovers
       ActiveRecord::Base.connection.execute(sql)
     end
 
-  end
+    private
 
+  end
 end

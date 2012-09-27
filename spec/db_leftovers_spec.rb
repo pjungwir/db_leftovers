@@ -24,11 +24,11 @@ class DBLeftovers::DatabaseInterface
     )
   end
 
-  def self.starts_with(indexes, foreign_keys, constraints={})
+  def self.starts_with(indexes=[], foreign_keys=[], constraints=[])
     # Convert symbols to strings:
-    @@indexes = indexes.inject({}) do |h, (k, v)| h[k.to_s] = v; h end
-    @@foreign_keys = foreign_keys.inject({}) do |h, (k, v)| h[k.to_s] = v; h end
-    @@constraints = constraints.inject({}) do |h, (k, v)| h[k.to_s] = v; h end
+    @@indexes = Hash[indexes.map{|idx| [idx.index_name, idx]}]
+    @@foreign_keys = Hash[foreign_keys.map{|fk| [fk.constraint_name, fk]}]
+    @@constraints = Hash[constraints.map{|chk| [chk.constraint_name, chk]}]
   end
 
   def lookup_all_indexes
@@ -58,14 +58,14 @@ end
 describe DBLeftovers do
 
   it "should allow an empty definition" do
-    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::DatabaseInterface.starts_with
     DBLeftovers::Definition.define do
     end
     DBLeftovers::DatabaseInterface.sqls.should be_empty
   end
 
   it "should allow an empty table definition" do
-    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::DatabaseInterface.starts_with
     DBLeftovers::Definition.define do
       table :books do
       end
@@ -74,7 +74,7 @@ describe DBLeftovers do
   end
 
   it "should create indexes on an empty database" do
-    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::DatabaseInterface.starts_with
     DBLeftovers::Definition.define do
       index :books, :shelf_id
       index :books, :publisher_id, :where => 'published'
@@ -96,7 +96,7 @@ describe DBLeftovers do
 
 
   it "should create table-prefixed indexes on an empty database" do
-    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::DatabaseInterface.starts_with
     DBLeftovers::Definition.define do
       table :books do
         index :shelf_id
@@ -120,7 +120,7 @@ describe DBLeftovers do
 
 
   it "should create foreign keys on an empty database" do
-    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::DatabaseInterface.starts_with
     DBLeftovers::Definition.define do
       foreign_key :books, :shelf_id, :shelves
       foreign_key :books, :publisher_id, :publishers, :id, :set_null => true
@@ -152,7 +152,7 @@ describe DBLeftovers do
 
 
   it "should create table-prefixed foreign keys on an empty database" do
-    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::DatabaseInterface.starts_with
     DBLeftovers::Definition.define do
       table :books do
         foreign_key :shelf_id, :shelves
@@ -186,11 +186,10 @@ describe DBLeftovers do
 
 
   it "should not create indexes when they already exist" do
-    DBLeftovers::DatabaseInterface.starts_with({
-      :index_books_on_shelf_id => DBLeftovers::Index.new(:books, :index_id),
-      :index_books_on_publisher_id => DBLeftovers::Index.new(
-        :books, :publisher_id, :where => 'published')
-    }, {})
+    DBLeftovers::DatabaseInterface.starts_with([
+      DBLeftovers::Index.new(:books, :shelf_id),
+      DBLeftovers::Index.new(:books, :publisher_id, :where => 'published')
+    ])
     DBLeftovers::Definition.define do
       index :books, :shelf_id
       index :books, :publisher_id, :where => 'published'
@@ -200,13 +199,15 @@ describe DBLeftovers do
 
 
 
+  it "should create indexes when they have been redefined"
+
+
 
   it "should not create table-prefixed indexes when they already exist" do
-    DBLeftovers::DatabaseInterface.starts_with({
-      :index_books_on_shelf_id => DBLeftovers::Index.new(:books, :index_id),
-      :index_books_on_publisher_id => DBLeftovers::Index.new(
-        :books, :publisher_id, :where => 'published')
-    }, {})
+    DBLeftovers::DatabaseInterface.starts_with([
+      DBLeftovers::Index.new(:books, :shelf_id),
+      DBLeftovers::Index.new(:books, :publisher_id, :where => 'published')
+    ])
     DBLeftovers::Definition.define do
       table :books do
         index :shelf_id
@@ -220,10 +221,9 @@ describe DBLeftovers do
 
 
   it "should not create foreign keys when they already exist" do
-    DBLeftovers::DatabaseInterface.starts_with({}, {
-      :fk_books_shelf_id => DBLeftovers::ForeignKey.new('fk_books_shelf_id',
-                                                        'books', 'shelf_id', 'shelves', 'id')
-    })
+    DBLeftovers::DatabaseInterface.starts_with([], [
+      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id')
+    ])
     DBLeftovers::Definition.define do
       foreign_key :books, :shelf_id, :shelves
     end
@@ -233,10 +233,9 @@ describe DBLeftovers do
 
 
   it "should not create table-prefixed foreign keys when they already exist" do
-    DBLeftovers::DatabaseInterface.starts_with({}, {
-      :fk_books_shelf_id => DBLeftovers::ForeignKey.new('fk_books_shelf_id',
-                                                        'books', 'shelf_id', 'shelves', 'id')
-    })
+    DBLeftovers::DatabaseInterface.starts_with([], [
+      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id')
+    ])
     DBLeftovers::Definition.define do
       table :books do
         foreign_key :shelf_id, :shelves
@@ -248,11 +247,10 @@ describe DBLeftovers do
 
 
   it "should drop indexes when they are removed from the definition" do
-    DBLeftovers::DatabaseInterface.starts_with({
-      :index_books_on_shelf_id => DBLeftovers::Index.new(:books, :index_id),
-      :index_books_on_publisher_id => DBLeftovers::Index.new(
-        :books, :publisher_id, :where => 'published')
-    }, {})
+    DBLeftovers::DatabaseInterface.starts_with([
+       DBLeftovers::Index.new(:books, :shelf_id),
+       DBLeftovers::Index.new(:books, :publisher_id, :where => 'published')
+    ])
     DBLeftovers::Definition.define do
       index :books, :shelf_id
     end
@@ -265,12 +263,10 @@ describe DBLeftovers do
 
 
   it "should drop foreign keys when they are removed from the definition" do
-    DBLeftovers::DatabaseInterface.starts_with({}, {
-      :fk_books_shelf_id => DBLeftovers::ForeignKey.new('fk_books_shelf_id',
-                                                        'books', 'shelf_id', 'shelves', 'id'),
-      :fk_books_author_id => DBLeftovers::ForeignKey.new('fk_books_author_id',
-                                                         'books', 'author_id', 'authors', 'id')
-    })
+    DBLeftovers::DatabaseInterface.starts_with([], [
+      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id'),
+      DBLeftovers::ForeignKey.new('fk_books_author_id', 'books', 'author_id', 'authors', 'id')
+    ])
     DBLeftovers::Definition.define do
       foreign_key :books, :shelf_id, :shelves
     end
@@ -283,7 +279,7 @@ describe DBLeftovers do
 
 
   it "should support creating multi-column indexes" do
-    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::DatabaseInterface.starts_with
     DBLeftovers::Definition.define do
       index :books, [:year, :title]
     end
@@ -298,9 +294,9 @@ describe DBLeftovers do
   
 
   it "should support dropping multi-column indexes" do
-    DBLeftovers::DatabaseInterface.starts_with({
-      :index_books_on_year_and_title => DBLeftovers::Index.new(:books, [:year, :title])
-    }, {})
+    DBLeftovers::DatabaseInterface.starts_with([
+      DBLeftovers::Index.new(:books, [:year, :title])
+    ])
     DBLeftovers::Definition.define do
     end
     DBLeftovers::DatabaseInterface.sqls.should have(1).item
@@ -312,7 +308,7 @@ describe DBLeftovers do
   
 
   it "should allow mixing indexes and foreign keys in the same table" do
-    DBLeftovers::DatabaseInterface.starts_with({}, {})
+    DBLeftovers::DatabaseInterface.starts_with
     DBLeftovers::Definition.define do
       table :books do
         index :author_id

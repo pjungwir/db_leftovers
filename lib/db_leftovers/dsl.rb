@@ -1,6 +1,11 @@
 module DBLeftovers
 
   class DSL
+
+    STATUS_EXISTS  = 'exists'
+    STATUS_CHANGED = 'changed'
+    STATUS_NEW     = 'new'
+
     def initialize
       @db = DatabaseInterface.new
       @indexes_by_table = {}      # Set from the DSL
@@ -44,9 +49,14 @@ module DBLeftovers
       @indexes_by_table.each do |table_name, indexes|
         indexes.each do |idx|
           # puts "#{idx.table_name}.[#{idx.column_names.join(',')}]"
-          if index_exists?(idx)
+          case index_status(idx)
+          when STATUS_EXISTS
             puts "Index already exists: #{idx.index_name} on #{idx.table_name}"
-          else
+          when STATUS_CHANGED
+            @db.execute_drop_index(idx.table_name, idx.index_name)
+            @db.execute_add_index(idx)
+            puts "Dropped & re-created index: #{idx.index_name} on #{idx.table_name}"
+          when STATUS_NEW
             @db.execute_add_index(idx)
             puts "Created index: #{idx.index_name} on #{idx.table_name}"
           end
@@ -55,11 +65,11 @@ module DBLeftovers
       end
 
       # Now drop any old indexes that are no longer in the definition file:
-      @old_indexes.each do |index_name, table_name|
+      @old_indexes.each do |index_name, idx|
         if not @new_indexes[index_name]
           # puts "#{index_name} #{table_name}"
-          @db.execute_drop_index(table_name, index_name)
-          puts "Dropped index: #{index_name} on #{table_name}"
+          @db.execute_drop_index(idx.table_name, index_name)
+          puts "Dropped index: #{index_name} on #{idx.table_name}"
         end
       end
     end
@@ -131,8 +141,13 @@ module DBLeftovers
       index_name[0,63]
     end
 
-    def index_exists?(idx)
-      @old_indexes[truncate_index_name(idx.index_name)]
+    def index_status(idx)
+      old = @old_indexes[truncate_index_name(idx.index_name)]
+      if old
+        return old.equals(idx) ? STATUS_EXISTS : STATUS_CHANGED
+      else
+        return STATUS_NEW
+      end
     end
 
     def foreign_key_exists?(fk)

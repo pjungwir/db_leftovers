@@ -21,7 +21,15 @@ module DBLeftovers
     end
 
     def unique?
-      @unique
+      !!@unique
+    end
+
+    def equals(other)
+      other.table_name == table_name and
+      other.column_names == column_names and
+      other.index_name == index_name and
+      other.where_clause == where_clause and
+      other.unique == unique
     end
 
     private 

@@ -11,11 +11,11 @@ module DBLeftovers
       opts.keys.each do |k|
         raise "Unknown option: #{k}" unless [:set_null, :cascade].include?(k)
       end
-      @constraint_name = constraint_name
-      @from_table = from_table
-      @from_column = from_column
-      @to_table = to_table
-      @to_column = to_column
+      @constraint_name = constraint_name.to_s
+      @from_table = from_table.to_s
+      @from_column = from_column.to_s
+      @to_table = to_table.to_s
+      @to_column = to_column.to_s
 
       @set_null = opts[:set_null]
       @cascade = opts[:cascade]
