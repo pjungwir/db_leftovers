@@ -6,8 +6,10 @@ module DBLeftovers
     STATUS_CHANGED = 'changed'
     STATUS_NEW     = 'new'
 
-    def initialize
+    def initialize(opts={})
+      @verbose = !!opts[:verbose]
       @db = DatabaseInterface.new
+
       @indexes_by_table = {}      # Set from the DSL
       @old_indexes = @db.lookup_all_indexes
       @new_indexes = {}
@@ -51,7 +53,7 @@ module DBLeftovers
           # puts "#{idx.table_name}.[#{idx.column_names.join(',')}]"
           case index_status(idx)
           when STATUS_EXISTS
-            puts "Index already exists: #{idx.index_name} on #{idx.table_name}"
+            puts "Index already exists: #{idx.index_name} on #{idx.table_name}" if @verbose
           when STATUS_CHANGED
             @db.execute_drop_index(idx.table_name, idx.index_name)
             @db.execute_add_index(idx)
@@ -79,7 +81,7 @@ module DBLeftovers
       @foreign_keys_by_table.each do |table_name, fks|
         fks.each do |fk|
           if foreign_key_exists?(fk)
-            puts "Foreign Key already exists: #{fk.constraint_name} on #{fk.from_table}"
+            puts "Foreign Key already exists: #{fk.constraint_name} on #{fk.from_table}" if @verbose
           else
             @db.execute_add_foreign_key(fk)
             puts "Created foreign key: #{fk.constraint_name} on #{fk.from_table}"
@@ -102,7 +104,7 @@ module DBLeftovers
       @constraints_by_table.each do |table_name, chks|
         chks.each do |chk|
           if constraint_exists?(chk)
-            puts "Constraint already exists: #{chk.constraint_name} on #{chk.on_table}"
+            puts "Constraint already exists: #{chk.constraint_name} on #{chk.on_table}" if @verbose
           else
             @db.execute_add_constraint(chk)
             puts "Created CHECK constraint: #{chk.constraint_name} on #{chk.on_table}"

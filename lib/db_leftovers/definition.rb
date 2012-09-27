@@ -7,7 +7,7 @@ module DBLeftovers
         :do_foreign_keys => true,
         :do_constraints => true
       }.merge(opts)
-      dsl = DSL.new
+      dsl = DSL.new(:verbose => ENV['DB_LEFTOVERS_VERBOSE'] || false)
       dsl.define(&block)
       dsl.record_indexes        if opts[:do_indexes]
       dsl.record_foreign_keys   if opts[:do_foreign_keys]

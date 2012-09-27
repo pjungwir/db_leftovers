@@ -2,6 +2,7 @@ namespace :db do
 
   desc "Set up indexes, foreign keys, and constraints"
   task :leftovers, [] => [:environment] do
+    ENV['DB_LEFTOVERS_VERBOSE'] = ENV['VERBOSE'] || ENV['DB_LEFTOVERS_VERBOSE']
     load File.join(::Rails.root.to_s, 'config', 'db_leftovers.rb')
   end
 
