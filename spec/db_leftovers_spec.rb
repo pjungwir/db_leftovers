@@ -123,8 +123,8 @@ describe DBLeftovers do
     DBLeftovers::DatabaseInterface.starts_with
     DBLeftovers::Definition.define do
       foreign_key :books, :shelf_id, :shelves
-      foreign_key :books, :publisher_id, :publishers, :id, :set_null => true
-      foreign_key :books, :author_id, :authors, :id, :cascade => true
+      foreign_key :books, :publisher_id, :publishers, :id, :on_delete => :set_null
+      foreign_key :books, :author_id, :authors, :id, :on_delete => :cascade
     end
     DBLeftovers::DatabaseInterface.sqls.should have(3).items
     DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
@@ -156,8 +156,8 @@ describe DBLeftovers do
     DBLeftovers::Definition.define do
       table :books do
         foreign_key :shelf_id, :shelves
-        foreign_key :publisher_id, :publishers, :id, :set_null => true
-        foreign_key :author_id, :authors, :id, :cascade => true
+        foreign_key :publisher_id, :publishers, :id, :on_delete => :set_null
+        foreign_key :author_id, :authors, :id, :on_delete => :cascade
       end
     end
     DBLeftovers::DatabaseInterface.sqls.should have(3).items
@@ -345,7 +345,22 @@ describe DBLeftovers do
 
 
 
-  it "should allow separating indexes and foreign keys from the same table" do
+  it "should allow separating indexes and foreign keys from the same table"
+
+  it "should reject invalid foreign key options" do
+    lambda {
+      DBLeftovers::Definition.define do
+        foreign_key :books, :author_id, :authors, :id, :icky => :boo_boo
+      end
+    }.should raise_error(RuntimeError, "Unknown option: icky")
+  end
+
+  it "should reject invalid foreign key on_delete values" do
+    lambda {
+      DBLeftovers::Definition.define do
+        foreign_key :books, :author_id, :authors, :id, :on_delete => :panic
+      end
+    }.should raise_error(RuntimeError, "Unknown on_delete option: panic")
   end
 
 end

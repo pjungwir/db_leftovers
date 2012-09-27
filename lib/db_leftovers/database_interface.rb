@@ -67,20 +67,6 @@ module DBLeftovers
 
 
 
-    def column_names_for_index(table_id, column_numbers)
-      column_numbers.map do |c|
-        sql = <<-EOQ
-            SELECT  attname
-            FROM    pg_attribute
-            WHERE   attrelid = #{table_id}
-            AND     attnum = #{c}
-        EOQ
-        ActiveRecord::Base.connection.select_value(sql)
-      end
-    end
-
-
-
     def lookup_all_foreign_keys
       ret = {}
       sql = <<-EOQ
@@ -164,6 +150,20 @@ module DBLeftovers
     end
 
     private
+
+    def column_names_for_index(table_id, column_numbers)
+      column_numbers.map do |c|
+        sql = <<-EOQ
+            SELECT  attname
+            FROM    pg_attribute
+            WHERE   attrelid = #{table_id}
+            AND     attnum = #{c}
+        EOQ
+        ActiveRecord::Base.connection.select_value(sql)
+      end
+    end
+
+
 
   end
 end

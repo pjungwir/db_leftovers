@@ -37,18 +37,17 @@ This ensures that you have an index on the given table and column(s). The `colum
 This ensures that you have a foreign key relating the given tables and columns.
 All parameters are strings/symbols except `opts`, which is a hash.
 If you don't pass anything for `opts`, you can leave off the `to_column` parameter, and it will default to `:id`.
-These options are supported:
+The only option that is supported is `:on_delete`, which may have any of these values:
 
+* `nil` Indicates that attempting to delete the referenced row should fail (the default).
 * `:set_null` Indicates that the foreign key should be set to null if the referenced row is deleted.
 * `:cascade` Indicates that the referencing row should be deleted if the referenced row is deleted.
-
-These options are mutually exclusive. They should probably be consolidated into a single option like `:on_delete`.
 
 #### Examples
 
     foreign_key :books, :author_id, :authors, :id
     foreign_key :books, :publisher_id, :publishers
-    foreign_key :pages, :book_id, :books, :id, :cascade => true
+    foreign_key :pages, :book_id, :books, :id, :on_delete => :cascade
 
 ### check(constraint\_name, on\_table, expression)
 
