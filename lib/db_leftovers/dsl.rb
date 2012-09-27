@@ -10,6 +10,10 @@ module DBLeftovers
       @foreign_keys_by_table = {}   # Set from the DSL
       @old_foreign_keys = @db.lookup_all_foreign_keys
       @new_foreign_keys = {}
+
+      @constraints_by_table = {}    # Set from the DSL
+      @old_constraints = @db.lookup_all_constraints
+      @new_constraints = {}
     end
 
     def define(&block)
@@ -29,6 +33,10 @@ module DBLeftovers
 
     def foreign_key(from_table, from_column, to_table, to_column='id', opts={})
       add_foreign_key(ForeignKey.new(name_constraint(from_table, from_column), from_table, from_column, to_table, to_column, opts))
+    end
+
+    def check(table_name, constraint_name, check_expression)
+      add_constraint(Constraint.new(constraint_name, table_name, check_expression))
     end
 
     def record_indexes
@@ -79,6 +87,29 @@ module DBLeftovers
       end
     end
 
+    def record_constraints
+      # First create any new constraints:
+      @constraints_by_table.each do |table_name, chks|
+        chks.each do |chk|
+          if constraint_exists?(chk)
+            puts "Constraint already exists: #{chk.constraint_name} on #{chk.on_table}"
+          else
+            @db.execute_add_constraint(chk)
+            puts "Created CHECK constraint: #{chk.constraint_name} on #{chk.on_table}"
+          end
+          @new_constraints[chk.constraint_name] = chk
+        end
+      end
+
+      # Now drop any old constraints that are no longer in the definition file:
+      @old_constraints.each do |constraint_name, chk|
+        if not @new_constraints[constraint_name]
+          @db.execute_drop_constraint(constraint_name, chk.on_table)
+          puts "Dropped CHECK constraint: #{constraint_name} on #{chk.on_table}"
+        end
+      end
+    end
+
     private
 
     def add_index(idx)
@@ -91,6 +122,11 @@ module DBLeftovers
       t << fk
     end
 
+    def add_constraint(chk)
+      t = (@constraints_by_table[chk.on_table] ||= [])
+      t << chk
+    end
+
     def truncate_index_name(index_name)
       index_name[0,63]
     end
@@ -101,6 +137,10 @@ module DBLeftovers
 
     def foreign_key_exists?(fk)
       @old_foreign_keys[fk.constraint_name]
+    end
+
+    def constraint_exists?(chk)
+      @old_constraints[chk.constraint_name]
     end
 
     def name_constraint(from_table, from_column)

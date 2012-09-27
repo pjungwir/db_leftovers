@@ -44,6 +44,22 @@ module DBLeftovers
       return ret
     end
 
+    def lookup_all_constraints
+      ret = {}
+      sql = <<-EOQ
+          SELECT  t.constraint_name, t.table_name
+          FROM    information_schema.table_constraints t
+          WHERE   t.constraint_type = 'CHECK'
+          AND     EXISTS (SELECT  1
+                          FROM    information_schema.constraint_column_usage c
+                          WHERE   t.constraint_name = c.constraint_name)
+      EOQ
+      ActiveRecord::Base.connection.select_rows(sql).each do |constr_name, on_table|
+        ret[constr_name] = Constraint.new(constr_name, on_table, nil)
+      end
+      return ret
+    end
+
     def execute_add_index(idx)
       unique = idx.unique? ? 'UNIQUE' : ''
       where = idx.where_clause.present? ? "WHERE #{idx.where_clause}" : ''
@@ -75,8 +91,18 @@ module DBLeftovers
     end
 
     def execute_drop_foreign_key(constraint_name, from_table, from_column)
-      execute_sql %{ALTER TABLE #{from_table}
-                DROP CONSTRAINT #{constraint_name}}
+      execute_sql %{ALTER TABLE #{from_table} DROP CONSTRAINT #{constraint_name}}
+    end
+
+    def execute_add_constraint(chk)
+      sql = <<-EOQ
+          ALTER TABLE #{chk.on_table} ADD CONSTRAINT #{chk.constraint_name} CHECK (#{chk.check})
+      EOQ
+      execute_sql sql
+    end
+
+    def execute_drop_constraint(constraint_name, on_table)
+      execute_sql %{ALTER TABLE #{on_table} DROP CONSTRAINT #{constraint_name}}
     end
 
     def execute_sql(sql)

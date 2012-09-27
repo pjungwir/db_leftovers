@@ -1,7 +1,8 @@
 require 'rails'
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-DBLeftovers::DatabaseInterface.class_eval do
+# DBLeftovers::DatabaseInterface.class_eval do
+class DBLeftovers::DatabaseInterface
 
   def initialize
     @@sqls = []
@@ -23,10 +24,11 @@ DBLeftovers::DatabaseInterface.class_eval do
     )
   end
 
-  def self.starts_with(indexes, foreign_keys)
+  def self.starts_with(indexes, foreign_keys, constraints={})
     # Convert symbols to strings:
     @@indexes = indexes.inject({}) do |h, (k, v)| h[k.to_s] = v; h end
     @@foreign_keys = foreign_keys.inject({}) do |h, (k, v)| h[k.to_s] = v; h end
+    @@constraints = constraints.inject({}) do |h, (k, v)| h[k.to_s] = v; h end
   end
 
   def lookup_all_indexes
@@ -35,6 +37,10 @@ DBLeftovers::DatabaseInterface.class_eval do
 
   def lookup_all_foreign_keys
     @@foreign_keys
+  end
+
+  def lookup_all_constraints
+    @@constraints
   end
 
 end

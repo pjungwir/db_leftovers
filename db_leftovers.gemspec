@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "db_leftovers"
-  s.version = "0.3.0"
+  s.version = "0.4.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Paul A. Jungwirth"]
-  s.date = "2012-01-20"
+  s.date = "2012-09-27"
   s.description = "        Define indexes and foreign keys for your Rails app\n        in one place using an easy-to-read DSL,\n        then run a rake task to bring your database up-to-date.\n"
   s.email = "pj@illuminatedcomputing.com"
   s.extra_rdoc_files = [
@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
     "VERSION",
     "db_leftovers.gemspec",
     "lib/db_leftovers.rb",
+    "lib/db_leftovers/constraint.rb",
     "lib/db_leftovers/database_interface.rb",
     "lib/db_leftovers/definition.rb",
     "lib/db_leftovers/dsl.rb",
@@ -41,7 +42,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/pjungwir/db_leftovers"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.10"
+  s.rubygems_version = "1.8.24"
   s.summary = "Used to define indexes and foreign keys for your Rails app"
 
   if s.respond_to? :specification_version then
