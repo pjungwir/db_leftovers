@@ -199,7 +199,21 @@ describe DBLeftovers do
 
 
 
-  it "should create indexes when they have been redefined"
+  it "should create indexes when they have been redefined" do
+    DBLeftovers::DatabaseInterface.starts_with([
+      DBLeftovers::Index.new(:books, :shelf_id),
+      DBLeftovers::Index.new(:books, :publisher_id, :where => 'published'),
+      DBLeftovers::Index.new(:books, :isbn, :unique => true)
+    ])
+    DBLeftovers::Definition.define do
+      index :books, :shelf_id, :where => 'isbn IS NOT NULL'
+      index :books, :publisher_id
+      index :books, :isbn
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(6).items
+    DBLeftovers::DatabaseInterface.sqls[0].should =~ /DROP INDEX index_books_on_shelf_id/
+    DBLeftovers::DatabaseInterface.sqls[1].should =~ /CREATE\s+INDEX index_books_on_shelf_id/
+  end
 
 
 
