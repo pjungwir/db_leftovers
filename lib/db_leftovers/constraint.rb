@@ -8,6 +8,16 @@ module DBLeftovers
       @on_table = on_table.to_s
       @check = check
     end
-  end
 
+    def equals(other)
+      other.constraint_name == constraint_name and
+      other.on_table == on_table and
+      other.check == check
+    end
+
+    def to_s
+      "<#{@constraint_name}: #{@on_table} CHECK (#{@check})>"
+    end
+
+  end
 end

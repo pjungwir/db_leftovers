@@ -108,9 +108,14 @@ module DBLeftovers
       # First create any new constraints:
       @constraints_by_table.each do |table_name, chks|
         chks.each do |chk|
-          if constraint_exists?(chk)
+          case constraint_status(chk)
+          when STATUS_EXISTS
             puts "Constraint already exists: #{chk.constraint_name} on #{chk.on_table}" if @verbose
-          else
+          when STATUS_CHANGED
+            @db.execute_drop_constraint(constraint_name, chk.on_table)
+            @db.execute_add_constraint(chk)
+            puts "Dropped & re-created CHECK constraint: #{chk.constraint_name} on #{chk.on_table}"
+          when STATUS_NEW
             @db.execute_add_constraint(chk)
             puts "Created CHECK constraint: #{chk.constraint_name} on #{chk.on_table}"
           end
@@ -166,8 +171,13 @@ module DBLeftovers
       end
     end
 
-    def constraint_exists?(chk)
-      @old_constraints[chk.constraint_name]
+    def constraint_status(chk)
+      old = @old_constraints[chk.constraint_name]
+      if old
+        return old.equals(chk) ? STATUS_EXISTS : STATUS_CHANGED
+      else
+        return STATUS_NEW
+      end
     end
 
     def name_constraint(from_table, from_column)
