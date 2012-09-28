@@ -80,9 +80,14 @@ module DBLeftovers
       # First create any new foreign keys:
       @foreign_keys_by_table.each do |table_name, fks|
         fks.each do |fk|
-          if foreign_key_exists?(fk)
+          case foreign_key_status(fk)
+          when STATUS_EXISTS
             puts "Foreign Key already exists: #{fk.constraint_name} on #{fk.from_table}" if @verbose
-          else
+          when STATUS_CHANGED
+            @db.execute_drop_foreign_key(constraint_name, fk.from_table, fk.from_column)
+            @db.execute_add_foreign_key(fk)
+            puts "Dropped & re-created foreign key: #{fk.constraint_name} on #{fk.from_table}"
+          when STATUS_NEW
             @db.execute_add_foreign_key(fk)
             puts "Created foreign key: #{fk.constraint_name} on #{fk.from_table}"
           end
@@ -152,8 +157,13 @@ module DBLeftovers
       end
     end
 
-    def foreign_key_exists?(fk)
-      @old_foreign_keys[fk.constraint_name]
+    def foreign_key_status(fk)
+      old = @old_foreign_keys[fk.constraint_name]
+      if old
+        return old.equals(fk) ? STATUS_EXISTS : STATUS_CHANGED
+      else
+        return STATUS_NEW
+      end
     end
 
     def constraint_exists?(chk)

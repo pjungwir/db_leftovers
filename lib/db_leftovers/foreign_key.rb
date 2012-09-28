@@ -31,7 +31,12 @@ module DBLeftovers
       other.from_column == from_column and
       other.to_table == to_table and
       other.to_column == to_column and
-      other.opts == opts
+      other.set_null == set_null and
+      other.cascade == cascade
+    end
+
+    def to_s
+      "<#{@constraint_name}: from #{@from_table}.#{@from_column} to #{@to_table}.#{@to_column} #{if @set_null; "ON DELETE SET NULL "; elsif @cascade; "ON DELETE CASCADE "; else ""; end}>"
     end
 
   end
