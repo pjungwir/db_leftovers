@@ -49,18 +49,30 @@ module DBLeftovers
 
 
     def lookup_all_foreign_keys
+      # confdeltype: a=nil, c=cascade, n=null
       ret = {}
+      # TODO: Redo this to use just the pg_catalog tables
+      # to avoid duplicate constraint names:
       sql = <<-EOQ
-          SELECT  t.constraint_name, t.table_name, k.column_name, t.constraint_type, c.table_name, c.column_name
+          SELECT  t.constraint_name, t.table_name, k.column_name, t.constraint_type, c.table_name, c.column_name, con.confdeltype
           FROM    information_schema.table_constraints t,
                   information_schema.constraint_column_usage c,
-                  information_schema.key_column_usage k
+                  information_schema.key_column_usage k,
+                  pg_catalog.pg_constraint con
           WHERE   t.constraint_name = c.constraint_name
           AND     k.constraint_name = c.constraint_name
           AND     t.constraint_type = 'FOREIGN KEY'
+          AND     con.conname = c.constraint_name
+          AND     con.contype = 'f'
       EOQ
-      ActiveRecord::Base.connection.select_rows(sql).each do |constr_name, from_table, from_column, constr_type, to_table, to_column|
-        ret[constr_name] = ForeignKey.new(constr_name, from_table, from_column, to_table, to_column)
+      ActiveRecord::Base.connection.select_rows(sql).each do |constr_name, from_table, from_column, constr_type, to_table, to_column, del_type|
+        del_type = case del_type
+                   when 'a'; nil
+                   when 'c'; :cascade
+                   when 'n': :set_null
+                   else; raise "Unknown del type: #{del_type}"
+                   end
+        ret[constr_name] = ForeignKey.new(constr_name, from_table, from_column, to_table, to_column, :on_delete => del_type)
       end
       return ret
     end
