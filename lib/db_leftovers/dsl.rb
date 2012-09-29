@@ -112,9 +112,9 @@ module DBLeftovers
           when STATUS_EXISTS
             puts "Constraint already exists: #{chk.constraint_name} on #{chk.on_table}" if @verbose
           when STATUS_CHANGED
-            @db.execute_drop_constraint(constraint_name, chk.on_table)
+            @db.execute_drop_constraint(chk.constraint_name, chk.on_table)
             @db.execute_add_constraint(chk)
-            puts "Dropped & re-created CHECK constraint: #{chk.constraint_name} on #{chk.on_table}"
+            puts "Dropped & re-created CHECK constraint: #{chk.constraint_name} on #{chk.on_table} as #{chk.check}"
           when STATUS_NEW
             @db.execute_add_constraint(chk)
             puts "Created CHECK constraint: #{chk.constraint_name} on #{chk.on_table}"

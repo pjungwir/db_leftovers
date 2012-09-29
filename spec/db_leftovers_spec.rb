@@ -425,4 +425,56 @@ describe DBLeftovers do
     }.should raise_error(RuntimeError, "`:cascade => true` should now be `:on_delete => :cascade`")
   end
 
+  it "should create CHECK constraints on an empty database" do
+    DBLeftovers::DatabaseInterface.starts_with([], [], [])
+    DBLeftovers::Definition.define do
+      check :books, :books_have_positive_pages, 'pages_count > 0'
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(1).item
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books ADD CONSTRAINT books_have_positive_pages CHECK (pages_count > 0)
+    EOQ
+  end
+
+  it "should create CHECK constraints inside a table block" do
+    DBLeftovers::DatabaseInterface.starts_with([], [], [])
+    DBLeftovers::Definition.define do
+      table :books do
+        check :books_have_positive_pages, 'pages_count > 0'
+      end
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(1).item
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books ADD CONSTRAINT books_have_positive_pages CHECK (pages_count > 0)
+    EOQ
+  end
+
+  it "should remove obsolete CHECK constraints" do
+    DBLeftovers::DatabaseInterface.starts_with([], [], [
+      DBLeftovers::Constraint.new(:books_have_positive_pages, :books, 'pages_count > 0')
+    ])
+    DBLeftovers::Definition.define do
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(1).item
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books DROP CONSTRAINT books_have_positive_pages
+    EOQ
+  end
+
+  it "should drop and re-create changed CHECK constraints" do
+    DBLeftovers::DatabaseInterface.starts_with([], [], [
+      DBLeftovers::Constraint.new(:books_have_positive_pages, :books, 'pages_count > 0')
+    ])
+    DBLeftovers::Definition.define do
+      check :books, :books_have_positive_pages, 'pages_count > 12'
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(2).items
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books DROP CONSTRAINT books_have_positive_pages
+    EOQ
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books ADD CONSTRAINT books_have_positive_pages CHECK (pages_count > 12)
+    EOQ
+  end
+
 end

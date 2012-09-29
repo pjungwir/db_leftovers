@@ -35,7 +35,7 @@ module DBLeftovers
           ORDER BY t.relname, i.relname
       EOQ
       ActiveRecord::Base.connection.select_rows(sql).each do |indexrelid, indrelid, table_name, index_name, is_unique, column_numbers, where_clause|
-        where_clause = where_clause.gsub(/^\((.*)\)$/, '\1') if where_clause    # strip surrounding parens
+        where_clause = remove_outer_parens(where_clause) if where_clause
         ret[index_name] = Index.new(
           table_name,
           column_names_for_index(indrelid, column_numbers.split(",")),
@@ -97,17 +97,23 @@ module DBLeftovers
     end
 
     def lookup_all_constraints
+      # TODO: Constraint it to the database for the current Rails project:
       ret = {}
       sql = <<-EOQ
-          SELECT  t.constraint_name, t.table_name
-          FROM    information_schema.table_constraints t
-          WHERE   t.constraint_type = 'CHECK'
-          AND     EXISTS (SELECT  1
-                          FROM    information_schema.constraint_column_usage c
-                          WHERE   t.constraint_name = c.constraint_name)
+          SELECT  c.conname,
+                  t.relname
+          FROM    pg_catalog.pg_constraint c,
+                  pg_catalog.pg_class t,
+                  pg_catalog.pg_namespace n
+          WHERE   c.contype = 'c'
+          AND     c.conrelid = t.oid
+          AND     t.relkind = 'r'
+          AND     n.oid = t.relnamespace
+          AND     n.nspname NOT IN ('pg_catalog', 'pg_toast')
+          AND     pg_catalog.pg_table_is_visible(t.oid)
       EOQ
-      ActiveRecord::Base.connection.select_rows(sql).each do |constr_name, on_table|
-        ret[constr_name] = Constraint.new(constr_name, on_table, nil)
+      ActiveRecord::Base.connection.select_rows(sql).each do |constr_name, on_table, check_expr|
+        ret[constr_name] = Constraint.new(constr_name, on_table, remove_outer_parens(check_expr))
       end
       return ret
     end
@@ -175,6 +181,9 @@ module DBLeftovers
       end
     end
 
+    def remove_outer_parens(str)
+      str.gsub(/^\((.*)\)$/, '\1')
+    end
 
 
   end
