@@ -84,7 +84,7 @@ module DBLeftovers
           when STATUS_EXISTS
             puts "Foreign Key already exists: #{fk.constraint_name} on #{fk.from_table}" if @verbose
           when STATUS_CHANGED
-            @db.execute_drop_foreign_key(constraint_name, fk.from_table, fk.from_column)
+            @db.execute_drop_foreign_key(fk.constraint_name, fk.from_table, fk.from_column)
             @db.execute_add_foreign_key(fk)
             puts "Dropped & re-created foreign key: #{fk.constraint_name} on #{fk.from_table}"
           when STATUS_NEW

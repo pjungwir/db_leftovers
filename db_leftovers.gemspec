@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "db_leftovers"
-  s.version = "0.6.0"
+  s.version = "0.7.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Paul A. Jungwirth"]
-  s.date = "2012-09-27"
+  s.date = "2012-09-29"
   s.description = "        Define indexes and foreign keys for your Rails app\n        in one place using an easy-to-read DSL,\n        then run a rake task to bring your database up-to-date.\n"
   s.email = "pj@illuminatedcomputing.com"
   s.extra_rdoc_files = [

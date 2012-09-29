@@ -13,15 +13,13 @@ class DBLeftovers::DatabaseInterface
   end
 
   def execute_sql(sql)
-    @@sqls << sql
+    @@sqls << DBLeftovers::DatabaseInterface.normal_whitespace(sql)
   end
 
   def self.saw_sql(sql)
     # puts sqls.join("\n\n\n")
     # Don't fail if only the whitespace is different:
-    sqls.map{|x| x.gsub(/\s+/m, ' ').strip}.include?(
-      sql.gsub(/\s+/m, ' ').strip
-    )
+    sqls.include?(normal_whitespace(sql))
   end
 
   def self.starts_with(indexes=[], foreign_keys=[], constraints=[])
@@ -41,6 +39,12 @@ class DBLeftovers::DatabaseInterface
 
   def lookup_all_constraints
     @@constraints
+  end
+
+  private
+
+  def self.normal_whitespace(sql)
+    sql.gsub(/\s/m, ' ').gsub(/  +/, ' ').strip
   end
 
 end
@@ -288,6 +292,26 @@ describe DBLeftovers do
     DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
         ALTER TABLE books DROP CONSTRAINT fk_books_author_id
     EOQ
+  end
+
+
+
+  it "should create foreign keys when they have been redefined" do
+    DBLeftovers::DatabaseInterface.starts_with([], [
+      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id'),
+      DBLeftovers::ForeignKey.new('fk_books_author_id', 'books', 'author_id', 'authors', 'id')
+    ])
+    DBLeftovers::Definition.define do
+      table :books do
+        foreign_key :shelf_id, :shelves, :id, :on_delete => :cascade
+        foreign_key :author_id, :authors, :id, :on_delete => :set_null
+      end
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(4).items
+    DBLeftovers::DatabaseInterface.sqls[0].should =~ /ALTER TABLE books DROP CONSTRAINT fk_books_shelf_id/
+    DBLeftovers::DatabaseInterface.sqls[1].should =~ /ALTER TABLE books ADD CONSTRAINT fk_books_shelf_id/
+    DBLeftovers::DatabaseInterface.sqls[2].should =~ /ALTER TABLE books DROP CONSTRAINT fk_books_author_id/
+    DBLeftovers::DatabaseInterface.sqls[3].should =~ /ALTER TABLE books ADD CONSTRAINT fk_books_author_id/
   end
 
 
