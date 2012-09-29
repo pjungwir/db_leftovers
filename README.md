@@ -93,7 +93,7 @@ Known Issues
 * db\_leftovers only supports PostgreSQL databases.
   If you want to add support for something else, just send me a pull request!
 
-* db\_leftovers will not notice if an foreign key/constraint definition changes.
+* db\_leftovers will not notice if an CHECK constraint definition changes.
   Right now it only checks for existence/non-existence.
   You can get around this by adding a version number to your constraint names,
   so if you want to force books to have at least 12 pages, you can say this:
@@ -102,10 +102,12 @@ Known Issues
 
   Then the old constraint will be dropped and the new one will be added.
 
-  However, db\_leftovers *does* check for index definitions, so if you
+  However, db\_leftovers *does* check for index and foreign key definitions, so if you
   make an existing index unique, add a column, remove a WHERE clause, or
   anything else, it will notice and drop and re-create the index.
-  I'm working on doing the same thing for foreign keys/constraints,
+  Similarly if you change the foreign keys `:on_delete` setting (or anything else),
+  db\_leftovers will notice and re-create the foreign key.
+  I'm working on doing the same thing for CHECK constraints,
   but it's not done just yet.
   
 
