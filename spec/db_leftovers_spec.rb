@@ -187,7 +187,17 @@ describe DBLeftovers do
     EOQ
   end
 
-
+  it "should create foreign keys with optional params inferred" do
+    DBLeftovers::DatabaseInterface.starts_with
+    DBLeftovers::Definition.define do
+      foreign_key :books, :shelves
+      table :books do
+        foreign_key :publishers
+        foreign_key :publication_country_id, :countries
+        foreign_key :co_author_id, :authors, :on_delete => :cascade
+      end
+    end
+  end
 
   it "should not create indexes when they already exist" do
     DBLeftovers::DatabaseInterface.starts_with([
