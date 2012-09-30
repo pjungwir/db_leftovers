@@ -78,6 +78,23 @@ db\_leftovers comes with a Rake task named `db:leftovers`. So you can update you
 
     rake db:leftovers
 
+db\_leftovers will notice whenever an index, foreign key, or CHECK constraint needs to be added, dropped, or changed.
+It will even catch cases where the name of the managed object is the same, but its attributes have changed.
+For instance, if you previously required books to have at least 1 page, but now you are introducing a "pamphlet"
+and want books to have at least 100 pages, you can change your config file to say:
+
+    check :books, :books_have_positive_pages, 'page_count >= 100'
+
+and db\_leftovers will notice the changed expression. It will drop and re-add the constraint.
+
+One caveat, however: we pull the current expression from the database, and sometimes Postgres does things like
+add type conversions. If instance, suppose you said `check :users, :email_length, 'LENGTH(email) > 2'`.
+The second time you run db\_leftovers, it will read the expression from Postgres and get `LENGTH((email)::text) > 2`,
+and so it will drop and re-create the constraint.
+It will drop and re-create it every time you run the rake task.
+To get around this, make sure your config file uses the same expression as printed by db\_leftovers in the rake output.
+This can also happen for index WHERE clauses, fixable by a similar workaround.
+
 To print messages even about indexes/foreign keys/constraints that haven't changed, you can say:
 
     rake db:leftovers VERBOSE=true
@@ -87,28 +104,14 @@ or
     rake db:leftovers DB_LEFTOVERS_VERBOSE=true
 
 
+
+
 Known Issues
 ------------
 
 * db\_leftovers only supports PostgreSQL databases.
   If you want to add support for something else, just send me a pull request!
 
-* db\_leftovers will not notice if an CHECK constraint definition changes.
-  Right now it only checks for existence/non-existence.
-  You can get around this by adding a version number to your constraint names,
-  so if you want to force books to have at least 12 pages, you can say this:
-
-  `check :books_have_positive_pages2, 'page_count >= 12'`
-
-  Then the old constraint will be dropped and the new one will be added.
-
-  However, db\_leftovers *does* check for index and foreign key definitions, so if you
-  make an existing index unique, add a column, remove a WHERE clause, or
-  anything else, it will notice and drop and re-create the index.
-  Similarly if you change the foreign keys `:on_delete` setting (or anything else),
-  db\_leftovers will notice and re-create the foreign key.
-  I'm working on doing the same thing for CHECK constraints,
-  but it's not done just yet.
   
 
 
