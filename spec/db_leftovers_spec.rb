@@ -16,6 +16,18 @@ class DBLeftovers::DatabaseInterface
     @@sqls << DBLeftovers::DatabaseInterface.normal_whitespace(sql)
   end
 
+  alias :old_execute_add_index :execute_add_index
+  def execute_add_index(idx)
+    old_execute_add_index(idx)
+    @@indexes[idx.index_name] = idx
+  end
+
+  alias :old_execute_add_constraint :execute_add_constraint
+  def execute_add_constraint(chk)
+    old_execute_add_constraint(chk)
+    @@constraints[chk.constraint_name] = chk
+  end
+
   def self.saw_sql(sql)
     # puts sqls.join("\n\n\n")
     # Don't fail if only the whitespace is different:
