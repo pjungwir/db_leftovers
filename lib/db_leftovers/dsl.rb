@@ -80,10 +80,22 @@ module DBLeftovers
           when STATUS_CHANGED
             @db.execute_drop_index(idx.table_name, idx.index_name)
             @db.execute_add_index(idx)
-            puts "Dropped & re-created index: #{idx.index_name} on #{idx.table_name}"
+            if idx.where_clause
+              # NB: This is O(n*m) where n is your indexes and m is your indexes with WHERE clauses.
+              #     But it's hard to believe it matters:
+              new_idx = @db.lookup_all_indexes[truncate_index_name(idx.index_name)]
+              puts "Dropped & re-created index: #{idx.index_name} on #{idx.table_name} WHERE #{new_idx.where_clause}"
+            else
+              puts "Dropped & re-created index: #{idx.index_name} on #{idx.table_name}"
+            end
           when STATUS_NEW
             @db.execute_add_index(idx)
-            puts "Created index: #{idx.index_name} on #{idx.table_name}"
+            if idx.where_clause
+              new_idx = @db.lookup_all_indexes[truncate_index_name(idx.index_name)]
+              puts "Created index: #{idx.index_name} on #{idx.table_name} WHERE #{new_idx.where_clause}"
+            else
+              puts "Created index: #{idx.index_name} on #{idx.table_name}"
+            end
           end
           @new_indexes[truncate_index_name(idx.index_name)] = table_name
         end
@@ -137,10 +149,14 @@ module DBLeftovers
           when STATUS_CHANGED
             @db.execute_drop_constraint(chk.constraint_name, chk.on_table)
             @db.execute_add_constraint(chk)
-            puts "Dropped & re-created CHECK constraint: #{chk.constraint_name} on #{chk.on_table} as #{chk.check}"
+            # NB: This is O(n^2) where n is your check constraints.
+            #     But it's hard to believe it matters:
+            new_chk = @db.lookup_all_constraints[chk.constraint_name]
+            puts "Dropped & re-created CHECK constraint: #{chk.constraint_name} on #{chk.on_table} as #{new_chk.check}"
           when STATUS_NEW
             @db.execute_add_constraint(chk)
-            puts "Created CHECK constraint: #{chk.constraint_name} on #{chk.on_table}"
+            new_chk = @db.lookup_all_constraints[chk.constraint_name]
+            puts "Created CHECK constraint: #{chk.constraint_name} on #{chk.on_table} as #{new_chk.check}"
           end
           @new_constraints[chk.constraint_name] = chk
         end

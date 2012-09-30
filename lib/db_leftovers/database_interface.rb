@@ -101,7 +101,8 @@ module DBLeftovers
       ret = {}
       sql = <<-EOQ
           SELECT  c.conname,
-                  t.relname
+                  t.relname,
+                  pg_get_expr(c.conbin, c.conrelid)
           FROM    pg_catalog.pg_constraint c,
                   pg_catalog.pg_class t,
                   pg_catalog.pg_namespace n
