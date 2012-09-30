@@ -3,7 +3,8 @@ module DBLeftovers
   class PostgresDatabaseInterface < GenericDatabaseInterface
 
     def lookup_all_indexes
-      # TODO: Constraint it to the database for the current Rails project:
+      # TODO: Constrain it to the database for the current Rails project:
+      #       (current_database(), current_schema())
       ret = {}
       sql = <<-EOQ
           SELECT  ix.indexrelid,
@@ -53,7 +54,8 @@ module DBLeftovers
       # confdeltype: a=nil, c=cascade, n=null
       ret = {}
       # TODO: Support multi-column foreign keys:
-      # TODO: Constraint it to the database for the current Rails project:
+      # TODO: Constrain it to the database for the current Rails project:
+      #       (current_database(), current_schema())
       sql = <<-EOQ
           SELECT  c.conname,
                   t1.relname,
@@ -97,7 +99,8 @@ module DBLeftovers
     end
 
     def lookup_all_constraints
-      # TODO: Constraint it to the database for the current Rails project:
+      # TODO: Constrain it to the database for the current Rails project:
+      #       (current_database(), current_schema())
       ret = {}
       sql = <<-EOQ
           SELECT  c.conname,

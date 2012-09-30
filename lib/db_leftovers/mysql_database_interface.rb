@@ -3,6 +3,7 @@ module DBLeftovers
   class MysqlDatabaseInterface < GenericDatabaseInterface
 
     def lookup_all_indexes
+      # TODO: Constrain it to the database for the current Rails project:
       ret = {}
       ActiveRecord::Base.connection.select_values("SHOW TABLES").each do |table_name|
         indexes = {}
@@ -28,11 +29,41 @@ module DBLeftovers
     end
 
     def lookup_all_foreign_keys
-      raise "stub"
+      # TODO: Support multi-column foreign keys:
+      # TODO: Constrain it to the database for the current Rails project:
+      ret = {}
+      sql = <<-EOQ
+          SELECT  c.constraint_name,
+                  c.table_name,
+                  k.column_name,
+                  c.referenced_table_name,
+                  k.referenced_column_name,
+                  c.delete_rule
+          FROM    information_schema.referential_constraints c,
+                  information_schema.key_column_usage k
+          WHERE   c.constraint_schema = k.constraint_schema
+          AND     c.constraint_name = k.constraint_name
+      EOQ
+      ActiveRecord::Base.connection.select_rows(sql).each do |constr_name, from_table, from_column, to_table, to_column, del_type|
+        del_type = case del_type
+                   when 'RESTRICT'; nil
+                   when 'CASCADE'; :cascade
+                   when 'SET NULL'; :set_null
+                   else; raise "Unknown del type: #{del_type}"
+                   end
+        ret[constr_name] = ForeignKey.new(constr_name, from_table, from_column, to_table, to_column, :on_delete => del_type)
+      end
+      return ret
     end
 
     def lookup_all_constraints
-      raise "stub"
+      # TODO: Constrain it to the database for the current Rails project:
+      # MySQL doesn't support CHECK constraints:
+      return []
+    end
+
+    def execute_drop_foreign_key(constraint_name, from_table, from_column)
+      execute_sql %{ALTER TABLE #{from_table} DROP FOREIGN KEY #{constraint_name}}
     end
 
   end
