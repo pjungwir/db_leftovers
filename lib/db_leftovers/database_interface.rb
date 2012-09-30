@@ -182,7 +182,7 @@ module DBLeftovers
     end
 
     def remove_outer_parens(str)
-      str.gsub(/^\((.*)\)$/, '\1')
+      str ? str.gsub(/^\((.*)\)$/, '\1') : nil
     end
 
 
