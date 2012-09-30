@@ -1,4 +1,6 @@
-require 'db_leftovers/database_interface.rb'
+require 'db_leftovers/generic_database_interface.rb'
+require 'db_leftovers/postgres_database_interface.rb'
+require 'db_leftovers/mysql_database_interface.rb'
 require 'db_leftovers/index.rb'
 require 'db_leftovers/foreign_key.rb'
 require 'db_leftovers/constraint.rb'
