@@ -38,7 +38,30 @@ module DBLeftovers
       add_index(Index.new(table_name, column_names, opts))
     end
 
-    def foreign_key(from_table, from_column, to_table, to_column='id', opts={})
+    # foreign_key(from_table, [from_column], to_table, [to_column], [opts]):
+    #   foreign_key(:books, :publishers)                   -> foreign_key(:books, nil, :publishers, nil)
+    #   foreign_key(:books, :co_author_id, :authors)       -> foreign_key(:books, :co_author_id, :authors, nil)
+    #   foreign_key(:books, :publishers, opts)             -> foreign_key(:books, nil, :publishers, nil, opts)
+    #   foreign_key(:books, :co_author_id, :authors, opts) -> foreign_key(:books, :co_author_id, :authors, nil, opts)
+    def foreign_key(from_table, from_column=nil, to_table=nil, to_column=nil, opts={})
+      # First get the options hash into the right place:
+      if to_column.class == Hash
+        opts = to_column
+        to_column = nil
+      elsif to_table.class == Hash
+        opts = to_table
+        to_table = to_column = nil
+      end
+
+      # Sort out implicit arguments:
+      if from_column and not to_table and not to_column
+        to_table = from_column
+        from_column = "#{to_table.to_s.singularize}_id"
+        to_column = :id
+      elsif from_column and to_table and not to_column
+        to_column = :id
+      end
+
       add_foreign_key(ForeignKey.new(name_constraint(from_table, from_column), from_table, from_column, to_table, to_column, opts))
     end
 

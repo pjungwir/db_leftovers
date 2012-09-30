@@ -191,12 +191,38 @@ describe DBLeftovers do
     DBLeftovers::DatabaseInterface.starts_with
     DBLeftovers::Definition.define do
       foreign_key :books, :shelves
+      foreign_key :books, :publishers, :on_delete => :set_null
+      foreign_key :books, :publication_country_id, :countries
+      foreign_key :books, :co_author_id, :authors, :on_delete => :cascade
+    end
+    DBLeftovers::DatabaseInterface.sqls.should have(4).items
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books ADD CONSTRAINT fk_books_shelf_id FOREIGN KEY (shelf_id) REFERENCES shelves (id)
+    EOQ
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books ADD CONSTRAINT fk_books_publisher_id FOREIGN KEY (publisher_id) REFERENCES publishers (id) ON DELETE SET NULL
+    EOQ
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books ADD CONSTRAINT fk_books_publication_country_id
+            FOREIGN KEY (publication_country_id) REFERENCES countries (id)
+    EOQ
+    DBLeftovers::DatabaseInterface.should have_seen_sql <<-EOQ
+        ALTER TABLE books ADD CONSTRAINT fk_books_co_author_id
+            FOREIGN KEY (co_author_id) REFERENCES authors (id) ON DELETE CASCADE
+    EOQ
+  end
+
+  it "should create foreign keys with optional params inferred and table block" do
+    DBLeftovers::DatabaseInterface.starts_with
+    DBLeftovers::Definition.define do
       table :books do
+        foreign_key :shelves
         foreign_key :publishers
         foreign_key :publication_country_id, :countries
         foreign_key :co_author_id, :authors, :on_delete => :cascade
       end
     end
+    DBLeftovers::DatabaseInterface.sqls.should have(4).items
   end
 
   it "should not create indexes when they already exist" do

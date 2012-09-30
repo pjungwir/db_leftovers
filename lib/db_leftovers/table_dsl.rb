@@ -14,7 +14,7 @@ module DBLeftovers
       @dsl.index(@table_name, column_names, opts)
     end
 
-    def foreign_key(from_column, to_table, to_column='id', opts={})
+    def foreign_key(from_column=nil, to_table=nil, to_column=nil, opts={})
       @dsl.foreign_key(@table_name, from_column, to_table, to_column, opts)
     end
 
