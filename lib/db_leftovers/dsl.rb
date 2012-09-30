@@ -8,7 +8,7 @@ module DBLeftovers
 
     def initialize(opts={})
       @verbose = !!opts[:verbose]
-      @db = DatabaseInterface.new
+      @db = opts[:db_interface] || get_database_interface
 
       @indexes_by_table = {}      # Set from the DSL
       @old_indexes = @db.lookup_all_indexes
@@ -224,6 +224,18 @@ module DBLeftovers
 
     def name_constraint(from_table, from_column)
       "fk_#{from_table}_#{from_column}"
+    end
+
+    def get_database_interface
+      db = ActiveRecord::Base.configurations[Rails.env]['adapter']
+      case db
+      when 'postgresql'
+        DBLeftovers::PostgresDatabaseInterface.new
+      when 'mysql2'
+        DBLeftovers::MySQLInterface.new
+      else
+        raise "Unsupported database: #{db}"
+      end
     end
 
   end
