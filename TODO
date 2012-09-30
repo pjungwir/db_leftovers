@@ -1,0 +1,25 @@
+- Abbreviated notation for conventional foreign keys:
+
+      table :books do
+        foreign_key :authors
+        foreign_key :publishers, :on_delete => :cascade
+
+        # and with a funny FK column but implicit PK of 'id':
+
+        foreign_key :ghost_writer_id, :authors, :on_delete => :cascade
+      end
+
+  In other words, the params are foreign_key(from_table, [from_column], to_table, [to_column], [opts]).
+
+
+- Print the actual WHERE-clause/CHECK expression used by postgres whenever the index/constraint is created (even the first time).
+
+- Refactor DatabaseInterface so all methods are instance methods and Definition/DSL uses an instance, set according to the Rails database adapter and also settable to a test subclass, so we can change the definition from test to test.
+
+- Add optional tests that use a real Postgres/MySQL/SQLite if available.
+  - Run all the same tests, but against a real DatabaseInterface instance.
+
+- Make sure everything works if the current db user has access to multiple databases: only run the code on the db given in the Rails database.yml.
+
+- Support MySQL
+
