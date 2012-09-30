@@ -32,11 +32,11 @@ This ensures that you have an index on the given table and column(s). The `colum
     index :books, [:publisher_id, :published_at]
     index :books, :isbn, :unique => true
 
-### foreign\_key(from\_table, from\_column, to\_table, [to\_column, [opts]])
+### foreign\_key(from\_table, [from\_column], to\_table, [to\_column], [opts])
 
 This ensures that you have a foreign key relating the given tables and columns.
 All parameters are strings/symbols except `opts`, which is a hash.
-If you don't pass anything for `opts`, you can leave off the `to_column` parameter, and it will default to `:id`.
+If you omit the column names, db\_leftovers will infer them based on Rails conventions. (See examples below.)
 The only option that is supported is `:on_delete`, which may have any of these values:
 
 * `nil` Indicates that attempting to delete the referenced row should fail (the default).
@@ -46,8 +46,14 @@ The only option that is supported is `:on_delete`, which may have any of these v
 #### Examples
 
     foreign_key :books, :author_id, :authors, :id
-    foreign_key :books, :publisher_id, :publishers
     foreign_key :pages, :book_id, :books, :id, :on_delete => :cascade
+
+With implicit column names:
+
+    foreign_key :books, :authors
+    foreign_key :books, :authors, :on_delete => :cascade
+    foreign_key :books, :co_author_id, :authors
+    foreign_key :books, :co_author_id, :authors, :on_delete => :cascade
 
 ### check(constraint\_name, on\_table, expression)
 
@@ -60,7 +66,7 @@ All parameters are strings or symbols.
 
 ### table(table\_name, &block)
 
-The `table` call is just a convenience so you can group all a table's indexes and foreign keys together and not keep repeating the table name. You use it like this:
+The `table` call is just a convenience so you can group all a table's indexes etcetera together and not keep repeating the table name. You use it like this:
 
     table :books do
       index :author_id
