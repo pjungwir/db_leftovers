@@ -19,7 +19,7 @@ Second, scattering `add_index` methods throughout migrations also doesn't match 
 It's easier to vet and analyze database indexes if you can see them all in one place,
 and db\_leftovers lets you do that easily.
 And since you can rest assured that each environment conforms to the same definition, you don't need to second-guess yourself about indexes that are present in development but missing in production.
-Db\_leftovers lets you rest assured that each environment conforms to a definition that is easy to read and checked into version control.
+Db\_leftovers gives you confidence that your database matches a definition that is easy to read and checked into version control.
 
 At present db\_leftovers supports PostgreSQL and MySQL, although since MySQL doesn't support index WHERE clauses or CHECK constraints, using that functionality will raise errors. (If you need to share the same definitions across Postgres and MySQL, you can run arbitrary Ruby code inside the DSL to avoid defining unsupported objects when run against MySQL.)
 
