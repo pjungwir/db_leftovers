@@ -17,3 +17,7 @@ group :development do
   gem "rcov", ">= 0"
 end
 
+group :test do
+  gem 'activerecord-postgresql-adapter'
+  gem 'activerecord-mysql2-adapter'
+end

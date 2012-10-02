@@ -6,8 +6,6 @@ module DBLeftovers
       raise "Should be overriden by a database-specific interface"
     end
 
-
-
     def lookup_all_foreign_keys
       raise "Should be overriden by a database-specific interface"
     end
@@ -62,7 +60,7 @@ module DBLeftovers
     end
 
     def execute_sql(sql)
-      ActiveRecord::Base.connection.execute(sql)
+      @conn.execute(sql)
     end
 
   end

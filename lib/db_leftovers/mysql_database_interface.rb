@@ -2,12 +2,16 @@ module DBLeftovers
 
   class MysqlDatabaseInterface < GenericDatabaseInterface
 
+    def initialize(conn=nil)
+      @conn = conn || ActiveRecord::Base.connection
+    end
+
     def lookup_all_indexes
       # TODO: Constrain it to the database for the current Rails project:
       ret = {}
-      ActiveRecord::Base.connection.select_values("SHOW TABLES").each do |table_name|
+      @conn.select_values("SHOW TABLES").each do |table_name|
         indexes = {}
-        ActiveRecord::Base.connection.select_rows("SHOW INDEXES FROM #{table_name}").each do |_, non_unique, key_name, seq_in_index, column_name, collation, cardinality, sub_part, packed, has_nulls, index_type, comment|
+        @conn.select_rows("SHOW INDEXES FROM #{table_name}").each do |_, non_unique, key_name, seq_in_index, column_name, collation, cardinality, sub_part, packed, has_nulls, index_type, comment|
           unless key_name == 'PRIMARY'
             # Combine rows for multi-column indexes
             h = (indexes[key_name] ||= { unique: !non_unique, name: key_name, columns: {} })
@@ -44,7 +48,7 @@ module DBLeftovers
           WHERE   c.constraint_schema = k.constraint_schema
           AND     c.constraint_name = k.constraint_name
       EOQ
-      ActiveRecord::Base.connection.select_rows(sql).each do |constr_name, from_table, from_column, to_table, to_column, del_type|
+      @conn.select_rows(sql).each do |constr_name, from_table, from_column, to_table, to_column, del_type|
         del_type = case del_type
                    when 'RESTRICT'; nil
                    when 'CASCADE'; :cascade

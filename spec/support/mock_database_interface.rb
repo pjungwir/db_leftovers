@@ -1,4 +1,3 @@
-
 class DBLeftovers::MockDatabaseInterface < DBLeftovers::GenericDatabaseInterface
 
   def initialize

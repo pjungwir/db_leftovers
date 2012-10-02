@@ -2,6 +2,10 @@ module DBLeftovers
 
   class PostgresDatabaseInterface < GenericDatabaseInterface
 
+    def initialize(conn=nil)
+      @conn = conn || ActiveRecord::Base.connection
+    end
+
     def lookup_all_indexes
       # TODO: Constrain it to the database for the current Rails project:
       #       (current_database(), current_schema())
@@ -35,7 +39,7 @@ module DBLeftovers
                     ix.indpred
           ORDER BY t.relname, i.relname
       EOQ
-      ActiveRecord::Base.connection.select_rows(sql).each do |indexrelid, indrelid, table_name, index_name, is_unique, column_numbers, where_clause|
+      @conn.select_rows(sql).each do |indexrelid, indrelid, table_name, index_name, is_unique, column_numbers, where_clause|
         where_clause = remove_outer_parens(where_clause) if where_clause
         ret[index_name] = Index.new(
           table_name,
@@ -86,7 +90,7 @@ module DBLeftovers
           AND     pg_catalog.pg_table_is_visible(t1.oid)
           AND     pg_catalog.pg_table_is_visible(t2.oid)
       EOQ
-      ActiveRecord::Base.connection.select_rows(sql).each do |constr_name, from_table, from_column, to_table, to_column, del_type|
+      @conn.select_rows(sql).each do |constr_name, from_table, from_column, to_table, to_column, del_type|
         del_type = case del_type
                    when 'a'; nil
                    when 'c'; :cascade
@@ -116,7 +120,7 @@ module DBLeftovers
           AND     n.nspname NOT IN ('pg_catalog', 'pg_toast')
           AND     pg_catalog.pg_table_is_visible(t.oid)
       EOQ
-      ActiveRecord::Base.connection.select_rows(sql).each do |constr_name, on_table, check_expr|
+      @conn.select_rows(sql).each do |constr_name, on_table, check_expr|
         ret[constr_name] = Constraint.new(constr_name, on_table, remove_outer_parens(check_expr))
       end
       return ret
@@ -132,7 +136,7 @@ module DBLeftovers
             WHERE   attrelid = #{table_id}
             AND     attnum = #{c}
         EOQ
-        ActiveRecord::Base.connection.select_value(sql)
+        @conn.select_value(sql)
       end
     end
 

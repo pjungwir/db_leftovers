@@ -1,0 +1,27 @@
+# Set this up by saying:
+# postgres=# create user db_leftovers_test with password 'testdb';
+# postgres=# create database db_leftovers_test owner db_leftovers_test;
+# postgres=# grant all privileges on database db_leftovers_test to db_leftovers_test;
+
+postgres:
+  adapter: postgres
+  host: localhost
+  database: db_leftovers_test
+  username: db_leftovers_test
+  password: testdb
+  encoding: utf8
+  template: template0   # Required for UTF-8 encoding
+
+
+# Set this up by saying:
+# mysql> create database db_leftovers_test;
+# mysql> grant all privileges on db_leftovers_test.* to db_leftovers@localhost identified by 'testdb';
+
+mysql:
+  adapter: mysql2
+  host: localhost
+  database: db_leftovers_test
+  username: db_leftovers
+  password: testdb
+  encoding: utf8
+
