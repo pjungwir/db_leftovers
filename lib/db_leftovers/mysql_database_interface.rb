@@ -11,10 +11,12 @@ module DBLeftovers
       ret = {}
       @conn.select_values("SHOW TABLES").each do |table_name|
         indexes = {}
-        @conn.select_rows("SHOW INDEXES FROM #{table_name}").each do |_, non_unique, key_name, seq_in_index, column_name, collation, cardinality, sub_part, packed, has_nulls, index_type, comment|
+        # Careful, MySQL automatically creates indexes whenever you define a foreign key.
+        # Use our foreign key naming convention to ignore these:
+        @conn.select_rows("SHOW INDEXES FROM #{table_name} WHERE key_name NOT LIKE 'fk_%'").each do |_, non_unique, key_name, seq_in_index, column_name, collation, cardinality, sub_part, packed, has_nulls, index_type, comment|
           unless key_name == 'PRIMARY'
             # Combine rows for multi-column indexes
-            h = (indexes[key_name] ||= { unique: !non_unique, name: key_name, columns: {} })
+            h = (indexes[key_name] ||= { unique: non_unique == 0, name: key_name, columns: {} })
             h[:columns][seq_in_index.to_i] = column_name
           end
         end
@@ -64,6 +66,13 @@ module DBLeftovers
       # TODO: Constrain it to the database for the current Rails project:
       # MySQL doesn't support CHECK constraints:
       return []
+    end
+
+    def execute_drop_index(table_name, index_name)
+      sql = <<-EOQ
+          DROP INDEX #{index_name} ON #{table_name}
+      EOQ
+      execute_sql(sql)
     end
 
     def execute_drop_foreign_key(constraint_name, from_table, from_column)

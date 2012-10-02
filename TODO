@@ -1,9 +1,2 @@
-- Refactor DatabaseInterface so all methods are instance methods and Definition/DSL uses an instance, set according to the Rails database adapter and also settable to a test subclass, so we can change the definition from test to test.
-
-- Add optional tests that use a real Postgres/MySQL/SQLite if available.
-  - Run all the same tests, but against a real DatabaseInterface instance.
-
 - Make sure everything works if the current db user has access to multiple databases: only run the code on the db given in the Rails database.yml.
-
-- Support MySQL
 
