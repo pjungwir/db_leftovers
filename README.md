@@ -15,7 +15,7 @@ This is useful because of the following limitations in vanilla Rails:
   
 That last point deserves some elaboration. First, using `add_index` in your migrations is bug-prone because without rare developer discipline, you wind up missing indexes in some environments. (My rule is "never change a migration after a `git push`," but I haven't seen this followed elsewhere, and there is nothing that automatically enforces it.) Also, since missing indexes don't cause errors, it's easy to be missing one and not notice until users start complaining about performance.
 
-Second, Scattering `add_index` methods throughout migrations also doesn't match the workflow of optimizing database queries. Hopefully you create appropriate indexes when you set up your tables originally, but in practice you often need to go back later and add/remove indexes according to your database usage patterns. Or you just forget the indexes, because you're thinking about modeling the data, not optimizing the queries.
+Second, scattering `add_index` methods throughout migrations also doesn't match the workflow of optimizing database queries. Hopefully you create appropriate indexes when you set up your tables originally, but in practice you often need to go back later and add/remove indexes according to your database usage patterns. Or you just forget the indexes, because you're thinking about modeling the data, not optimizing the queries.
 It's easier to vet and analyze database indexes if you can see them all in one place,
 and db\_leftovers lets you do that easily.
 And since you can rest assured that each environment conforms to the same definition, you don't need to second-guess yourself about indexes that are present in development but missing in production.
