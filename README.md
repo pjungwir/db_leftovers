@@ -168,6 +168,14 @@ Known Issues
 * It'd be nice to have another Rake task that will read your database and generate a new `db_leftovers.rb` file, to help people migrating existing projects that already have lots of tables.
 
 
+
+Tests
+-----
+
+Db\_leftovers has three kinds of RSpec tests: tests that run against a mock database, a Postgres database, and a MySQL database. The tests look at `spec/config/database.yml` to see if you've created a test database for Postgres and/or MySQL, and only run those tests if an entry is found there. You can look at `spec/config/database.yml.sample` to get a sense of what is expected and for instructions on setting up your own test databases. If you're contributing a patch, please make sure you've run these tests!
+
+
+
 Contributing to db\_leftovers
 -----------------------------
  
