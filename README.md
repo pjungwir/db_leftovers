@@ -37,7 +37,7 @@ Within the DSL file, the following methods are supported:
 
 ### index(table\_name, columns, [opts])
 
-This ensures that you have an index on the given table and column(s). The `columns` parameter can be either a string or a list of strings. Opts is a hash with the following possible keys:
+This ensures that you have an index on the given table and column(s). The `columns` parameter can be either a string/symbol or a list of strings/symbols. Opts is a hash with the following possible keys:
 
 * `:name` The name of the index. Defaults to `index_`*table\_name*`_on_`*column\_names*, like the `add_index` method from Rails migrations.
 
