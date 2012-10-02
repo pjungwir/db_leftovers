@@ -81,7 +81,7 @@ With implicit column names:
     foreign_key :books, :co_author_id, :authors
     foreign_key :books, :co_author_id, :authors, :on_delete => :cascade
 
-### check(constraint\_name, on\_table, expression)
+### check(on\_table, constraint\_name, expression)
 
 This ensures that you have a CHECK constraint on the given table with the given name and expression.
 All parameters are strings or symbols.
