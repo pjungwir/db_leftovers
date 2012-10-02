@@ -19,7 +19,21 @@ At present db\_leftovers supports PostgreSQL and MySQL, although since MySQL doe
 Configuration File
 ------------------
 
-db\_leftovers reads a file named `config/db_leftovers.rb` to find out which indexes and constraints you want in your database. This file is a DSL implemented in Ruby, sort of like `config/routes.rb`. There are only a few methods:
+db\_leftovers reads a file named `config/db_leftovers.rb` to find out which indexes and constraints you want in your database. This file is a DSL implemented in Ruby, sort of like `config/routes.rb`. It should look something like this:
+
+    DBLeftovers::Definition.define do
+
+      table :users do
+        index :email, :unique => true
+        check :registered_at_unless_guest, "role_name = 'guest' OR registered_at IS NOT NULL"
+      end
+
+      foreign_key :orders, :users
+
+      # . . 
+    end
+
+Within the DSL file, the following methods are supported:
 
 ### index(table\_name, columns, [opts])
 
