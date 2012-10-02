@@ -1,7 +1,7 @@
 db\_leftovers
 =============
 
-db\_leftovers lets you define indexes, foreign keys, and CHECK constraints for your Rails app
+Db\_leftovers lets you define indexes, foreign keys, and CHECK constraints for your Rails app
 in one place using an easy-to-read DSL,
 then run a rake task to bring your database up-to-date.
 Whenever you edit the DSL, you can re-run the rake task and db\_leftovers will alter your database accordingly.
@@ -13,7 +13,13 @@ This is useful because of the following limitations in vanilla Rails:
   * If you're using Heroku, `db:push` and `db:pull` won't transfer your foreign keys and CHECK constraints.
   * Creating indexes in your migrations makes it hard to manage them.
   
-That last point deserves some elaboration. Using `add_index` in your migrations is bug-prone because without rare developer discipline (My rule is "never change a migration after a `git push`," but I haven't seen this followed elsewhere.), you wind up missing indexes in some environments. It also means you don't have a central place to see all your indexes so you can analyze which are needed. With db\_leftovers, you can rest assured that each environment conforms to a definition that is easy to read and checked into version control.
+That last point deserves some elaboration. Using `add_index` in your migrations is bug-prone because without rare developer discipline (My rule is "never change a migration after a `git push`," but I haven't seen this followed elsewhere.), you wind up missing indexes in some environments.
+
+Scattering `add_index` methods throughout migrations also doesn't match the workflow of optimizing database queries. Hopefully you create appropriate indexes when you set up your tables originally, but in practice you often need to go back later and add/remove indexes according to your database usage patterns. Or you just forget the indexes, because you're thinking about modeling the data, not optimizing the queries.
+It's easier to vet and analyze database indexes if you can see them all in one place,
+and db\_leftovers lets you do that easily.
+And since you can rest assured that each environment conforms to the same definition, you don't need to second-guess yourself about indexes that are present in development but missing in production.
+Db\_leftovers lets you rest assured that each environment conforms to a definition that is easy to read and checked into version control.
 
 At present db\_leftovers supports PostgreSQL and MySQL, although since MySQL doesn't support index WHERE clauses or CHECK constraints, using that functionality will raise errors. (If you need to share the same definitions across Postgres and MySQL, you can run arbitrary Ruby code inside the DSL to avoid defining unsupported objects when run against MySQL.)
 
