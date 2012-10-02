@@ -163,6 +163,8 @@ You could also change this code to *not* run migrations after each deploy, if yo
 Known Issues
 ------------
 
+* Multi-column foreign keys are not supported. This shouldn't be a problem for a Rails project, unless you are using a legacy database. If you need this functionality, let me know and I'll look into adding it.
+
 * It'd be nice to have another Rake task that will read your database and generate a new `db_leftovers.rb` file, to help people migrating existing projects that already have lots of tables.
 
 
