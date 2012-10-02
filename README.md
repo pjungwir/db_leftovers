@@ -12,7 +12,7 @@ This is useful because of the following limitations in vanilla Rails:
   * If you're using Heroku, `db:push` and `db:pull` won't transfer your foreign keys and CHECK constraints.
   * Creating indexes in your migrations makes it hard to manage them.
   
-That last point deserves some elaboration. Using `add_index` in your migrations is bug-prone because without rare developer discipline (My rule is "never change a migration after a `git push`, but I haven't seen this followed elsewhere."), you wind up missing indexes in some environments. It also means you don't have a central place to see all your indexes so you can analyze which are needed. With db\_leftovers, you can rest assured that each environment conforms to a definition that is easy to read and checked into version control.
+That last point deserves some elaboration. Using `add_index` in your migrations is bug-prone because without rare developer discipline (My rule is "never change a migration after a `git push`," but I haven't seen this followed elsewhere.), you wind up missing indexes in some environments. It also means you don't have a central place to see all your indexes so you can analyze which are needed. With db\_leftovers, you can rest assured that each environment conforms to a definition that is easy to read and checked into version control.
 
 At present db\_leftovers supports PostgreSQL and MySQL, although since MySQL doesn't support index WHERE clauses or CHECK constraints, using that functionality will raise errors. (If you need to share the same definitions across Postgres and MySQL, you can run arbitrary Ruby code inside the DSL to avoid defining unsupported objects when run against MySQL.)
 
