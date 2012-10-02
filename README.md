@@ -138,6 +138,7 @@ Known Issues
 * When db\_leftovers interrogates your database for the currently-defined indexes et cetera, it doesn't filter things by the current database name. So if you have mutliple Rails projects all accessible to the same user, you'll wind up changing more than you like (probably by DROPing things).
 
   
+* It'd be nice to have another Rake task that will read your database and generate a new `db_leftovers.rb` file, to help people migrating existing projects that already have lots of tables.
 
 
 Contributing to db\_leftovers

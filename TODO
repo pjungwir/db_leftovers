@@ -1,2 +1,3 @@
 - Make sure everything works if the current db user has access to multiple databases: only run the code on the db given in the Rails database.yml.
 
+- It'd be nice to have another Rake task that will read your database and generate a new `db_leftovers.rb` file, to help people migrating existing projects that already have lots of tables.
