@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "db_leftovers"
-  s.version = "0.9.2"
+  s.version = "1.0.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Paul A. Jungwirth"]
-  s.date = "2012-09-30"
+  s.date = "2012-10-02"
   s.description = "        Define indexes and foreign keys for your Rails app\n        in one place using an easy-to-read DSL,\n        then run a rake task to bring your database up-to-date.\n"
   s.email = "pj@illuminatedcomputing.com"
   s.extra_rdoc_files = [
@@ -30,15 +30,23 @@ Gem::Specification.new do |s|
     "db_leftovers.gemspec",
     "lib/db_leftovers.rb",
     "lib/db_leftovers/constraint.rb",
-    "lib/db_leftovers/database_interface.rb",
     "lib/db_leftovers/definition.rb",
     "lib/db_leftovers/dsl.rb",
     "lib/db_leftovers/foreign_key.rb",
+    "lib/db_leftovers/generic_database_interface.rb",
     "lib/db_leftovers/index.rb",
+    "lib/db_leftovers/mysql_database_interface.rb",
+    "lib/db_leftovers/postgres_database_interface.rb",
     "lib/db_leftovers/table_dsl.rb",
     "lib/tasks/leftovers.rake",
+    "spec/config/database.yml.sample",
     "spec/db_leftovers_spec.rb",
-    "spec/spec_helper.rb"
+    "spec/mysql_spec.rb",
+    "spec/postgres_spec.rb",
+    "spec/spec_helper.rb",
+    "spec/support/mock_database_interface.rb",
+    "spec/support/shared_db_tests.rb",
+    "spec/support/sql_matcher.rb"
   ]
   s.homepage = "http://github.com/pjungwir/db_leftovers"
   s.licenses = ["MIT"]
