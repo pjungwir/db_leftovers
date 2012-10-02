@@ -4,12 +4,17 @@ db\_leftovers
 db\_leftovers lets you define indexes, foreign keys, and CHECK constraints for your Rails app
 in one place using an easy-to-read DSL,
 then run a rake task to bring your database up-to-date.
-I wrote this because I didn't want indexes and constraints scattered throughout my migrations or buried in my `schema.rb`, and I wanted a command I could run to ensure that they matched across my development, test, staging, and production databases.
-This was particularly a problem for Heroku projects, because `db:push` and `db:pull` do not transfer your foreign keys or other constraints.
-But now that it's written, I'm finding it useful on non-Heroku projects as well.
+Whenever you edit the DSL, you can re-run the rake task and db\_leftovers will alter your database accorindgly.
+This is useful because of the following limitations in vanilla Rails:
 
-At present db\_leftovers works only on PostgreSQL databases,
-but it could easily be extended to cover other RDBMSes.
+  * There are no built-in migration methods to create foreign keys or CHECK constraints.
+  * Even if created, foreign keys and CHECK constraints won't appear in your schema.rb.
+  * If you're using Heroku, `db:push` and `db:pull` won't transfer your foreign keys and CHECK constraints.
+  * Creating indexes in your migrations makes it hard to manage them.
+  
+That last point deserves some elaboration. Using `create_index` in your migrations is bug-prone because without rare developer discipline (My rule is "never change a migration after a `git push`, but I haven't seen this followed elsewhere."), you wind up missing indexes in some environments. It also means you don't have a central place to see all your indexes so you can analyze which are needed. With db\_leftovers, you can rest assured that each environment conforms to a definition that is easy to read and checked into version control.
+
+At present db\_leftovers supports PostgreSQL and MySQL, although since MySQL doesn't support index WHERE clauses or CHECK constraints, using that functionality will raise errors. (If you need to share the same definitions across Postgres and MySQL, you can run arbitrary Ruby code inside the DSL to avoid defining unsupported objects when run against MySQL.)
 
 Configuration File
 ------------------
@@ -66,7 +71,7 @@ All parameters are strings or symbols.
 
 ### table(table\_name, &block)
 
-The `table` call is just a convenience so you can group all a table's indexes etcetera together and not keep repeating the table name. You use it like this:
+The `table` call is just a convenience so you can group all a table's indexes et cetera together and not keep repeating the table name. You use it like this:
 
     table :books do
       index :author_id
@@ -100,6 +105,7 @@ and so it will drop and re-create the constraint.
 It will drop and re-create it every time you run the rake task.
 To get around this, make sure your config file uses the same expression as printed by db\_leftovers in the rake output.
 This can also happen for index WHERE clauses, fixable by a similar workaround.
+MySQL doesn't have this problem because it doesn't support CHECK constraints or index WHERE clauses.
 
 To print messages even about indexes/foreign keys/constraints that haven't changed, you can say:
 
@@ -115,8 +121,7 @@ or
 Known Issues
 ------------
 
-* db\_leftovers only supports PostgreSQL databases.
-  If you want to add support for something else, just send me a pull request!
+* When db\_leftovers interrogates your database for the currently-defined indexes et cetera, it doesn't filter things by the current database name. So if you have mutliple Rails projects all accessible to the same user, you'll wind up changing more than you like (probably by DROPing things).
 
   
 
