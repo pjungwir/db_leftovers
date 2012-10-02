@@ -2,12 +2,12 @@ module DBLeftovers
 
   class MysqlDatabaseInterface < GenericDatabaseInterface
 
-    def initialize(conn=nil)
+    def initialize(conn=nil, database_name=nil)
       @conn = conn || ActiveRecord::Base.connection
+      @db_name = database_name || ActiveRecord::Base.configurations[Rails.env]['database']
     end
 
     def lookup_all_indexes
-      # TODO: Constrain it to the database for the current Rails project:
       ret = {}
       @conn.select_values("SHOW TABLES").each do |table_name|
         indexes = {}
@@ -36,7 +36,6 @@ module DBLeftovers
 
     def lookup_all_foreign_keys
       # TODO: Support multi-column foreign keys:
-      # TODO: Constrain it to the database for the current Rails project:
       ret = {}
       sql = <<-EOQ
           SELECT  c.constraint_name,
@@ -49,6 +48,7 @@ module DBLeftovers
                   information_schema.key_column_usage k
           WHERE   c.constraint_schema = k.constraint_schema
           AND     c.constraint_name = k.constraint_name
+          AND     c.constraint_schema IN (#{target_databases_quoted})
       EOQ
       @conn.select_rows(sql).each do |constr_name, from_table, from_column, to_table, to_column, del_type|
         del_type = case del_type
@@ -77,6 +77,17 @@ module DBLeftovers
 
     def execute_drop_foreign_key(constraint_name, from_table, from_column)
       execute_sql %{ALTER TABLE #{from_table} DROP FOREIGN KEY #{constraint_name}}
+    end
+
+    private
+
+    def target_databases_quoted
+      case @db_name
+      when Array
+        @db_name.map{|x| "'#{x}'"}.join(", ")
+      else
+        "'#{@db_name}'"
+      end
     end
 
   end

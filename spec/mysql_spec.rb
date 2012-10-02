@@ -18,9 +18,9 @@ describe DBLeftovers::MysqlDatabaseInterface do
     it "WARN: Skipping MySQL tests because no database found. Use spec/config/database.yml to configure one."
   else
     before do
-       y = test_database_yml('mysql')
+      y = test_database_yml('mysql')
       @conn = test_db_connection(nil, y)
-      @db = DBLeftovers::MysqlDatabaseInterface.new(@conn)
+      @db = DBLeftovers::MysqlDatabaseInterface.new(@conn, y['database'])
       drop_all_mysql_tables(@conn, y['database'])
       fresh_tables(@conn, y['database'])
     end
