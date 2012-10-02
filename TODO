@@ -4,3 +4,8 @@
 
 - Support custom names for foreign keys. (But then watch out excluding these from the list of indexes on MySQL!)
 
+- Support CREATE INDEX CONCURRENTLY on Postgres as an option to Rake or the `define` call.
+
+- Support NOT VALID for Postgres 9.1+ foreign keys and Postgres 9.2+ CHECK constraints.
+
+
