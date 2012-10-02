@@ -121,7 +121,7 @@ and db\_leftovers will notice the changed expression. It will drop and re-add th
 
 One caveat, however: we pull the current expression from the database, and sometimes Postgres does things like
 add type conversions and extra parentheses. If instance, suppose you said `check :users, :email_length, 'LENGTH(email) > 2'`.
-The second time you run db\_leftovers, it will read the expression from Postgres and get `LENGTH((email)::text) > 2`,
+The second time you run db\_leftovers, it will read the expression from Postgres and get `length((email)::text) > 2`,
 and so it will drop and re-create the constraint.
 It will drop and re-create it every time you run the rake task.
 To get around this, make sure your config file uses the same expression as printed by db\_leftovers in the rake output.
