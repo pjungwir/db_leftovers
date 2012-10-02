@@ -9,6 +9,7 @@ This is useful because of the following limitations in vanilla Rails:
 
   * There are no built-in migration methods to create foreign keys or CHECK constraints.
   * Even if created, foreign keys and CHECK constraints won't appear in your schema.rb.
+  * The built-in `add_index` method doesn't support WHERE clauses on your indexes.
   * If you're using Heroku, `db:push` and `db:pull` won't transfer your foreign keys and CHECK constraints.
   * Creating indexes in your migrations makes it hard to manage them.
   
