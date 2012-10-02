@@ -132,6 +132,27 @@ or
 
 
 
+Capistrano Integration
+----------------------
+
+I recommend running `rake db:migrate` any time you deploy, and then running `rake db:leftovers` after that. Here is what you need in your `config/deploy.rb` to make that happen:
+
+    set :rails_env, "production"
+
+    namespace :db do
+      desc "Set up constraints and indexes"
+      task :leftovers do
+        run("cd #{deploy_to}/current && bundle exec rake db:leftovers RAILS_ENV=#{rails_env}")  
+      end
+    end
+
+    after :deploy, 'deploy:migrate'
+    after 'deploy:migrate', 'db:leftovers'
+
+You could also change this code to *not* run migrations after each deploy, if you like. But in that case I'd recommend not running db:leftovers until after the latest migrations (if any), since new entries in the DSL are likely to reference newly-created tables/columns.
+
+
+
 Known Issues
 ------------
 
