@@ -58,10 +58,10 @@ module DBLeftovers
       # TODO: Support multi-column foreign keys:
       sql = <<-EOQ
           SELECT  c.conname,
-                  t1.relname,
-                  a1.attname,
-                  t2.relname,
-                  a2.attname,
+                  t1.relname AS from_table,
+                  a1.attname AS from_column,
+                  t2.relname AS to_table,
+                  a2.attname AS to_column,
                   c.confdeltype
           FROM    pg_catalog.pg_constraint c,
                   pg_catalog.pg_class t1,
