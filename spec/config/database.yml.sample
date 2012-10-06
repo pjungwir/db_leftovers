@@ -25,3 +25,23 @@ mysql:
   password: testdb
   encoding: utf8
 
+# These are used instead of the above if you're running under JRuby:
+
+jdbcpostgres:
+  adapter: jdbcpostgresql
+  host: localhost
+  database: db_leftovers_test
+  username: db_leftovers_test
+  password: testdb
+  encoding: utf8
+  template: template0   # Required for UTF-8 encoding
+
+jdbcmysql:
+  adapter: jdbcmysql
+  host: localhost
+  database: db_leftovers_test
+  username: db_leftovers
+  password: testdb
+  encoding: utf8
+
+

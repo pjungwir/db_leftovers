@@ -18,6 +18,8 @@ group :development do
 end
 
 group :test do
-  gem 'activerecord-postgresql-adapter'
-  gem 'activerecord-mysql2-adapter'
+  gem 'activerecord-postgresql-adapter', :platforms => :ruby
+  gem 'activerecord-mysql2-adapter', :platforms => :ruby
+  gem 'activerecord-jdbcpostgresql-adapter', :platforms => :jruby
+  gem 'activerecord-jdbcmysql-adapter', :platforms => :jruby
 end

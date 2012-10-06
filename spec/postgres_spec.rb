@@ -10,13 +10,17 @@ def drop_all_postgres_tables(conn, database_name)
   end
 end
 
+def postgres_config
+  test_database_yml(RUBY_PLATFORM == 'java' ? 'jdbcpostgres' : 'postgres')
+end
+
 describe DBLeftovers::PostgresDatabaseInterface do
 
-  if not test_database_yml('postgres')
+  if not postgres_config
     it "WARN: Skipping Postgres tests because no database found. Use spec/config/database.yml to configure one."
   else
     before do
-       y = test_database_yml('postgres')
+       y = postgres_config
       @conn = test_db_connection(nil, y)
       @db = DBLeftovers::PostgresDatabaseInterface.new(@conn)
       drop_all_postgres_tables(@conn, y['database'])

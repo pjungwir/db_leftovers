@@ -12,13 +12,17 @@ def drop_all_mysql_tables(conn, database_name)
   conn.execute("SET FOREIGN_KEY_CHECKS = 1")
 end
 
+def mysql_config
+  test_database_yml(RUBY_PLATFORM == 'java' ? 'jdbcmysql' : 'mysql')
+end
+
 describe DBLeftovers::MysqlDatabaseInterface do
 
-  if not test_database_yml('mysql')
+  if not mysql_config
     it "WARN: Skipping MySQL tests because no database found. Use spec/config/database.yml to configure one."
   else
     before do
-      y = test_database_yml('mysql')
+      y = mysql_config
       @conn = test_db_connection(nil, y)
       @db = DBLeftovers::MysqlDatabaseInterface.new(@conn, y['database'])
       drop_all_mysql_tables(@conn, y['database'])
