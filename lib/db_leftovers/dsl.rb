@@ -85,7 +85,7 @@ module DBLeftovers
             @db.execute_add_index(idx)
             log_new_index(idx, false)
           end
-          @new_indexes[truncate_index_name(idx.index_name)] = table_name
+          @new_indexes[idx.index_name] = table_name
         end
       end
 
@@ -162,7 +162,7 @@ module DBLeftovers
       if idx.where_clause
         # NB: This is O(n*m) where n is your indexes and m is your indexes with WHERE clauses.
         #     But it's hard to believe it matters:
-        new_idx = @db.lookup_all_indexes[truncate_index_name(idx.index_name)]
+        new_idx = @db.lookup_all_indexes[idx.index_name]
         puts "#{did_what} index: #{idx.index_name} on #{idx.table_name} WHERE #{new_idx.where_clause}"
       else
         puts "#{did_what} index: #{idx.index_name} on #{idx.table_name}"
@@ -191,12 +191,8 @@ module DBLeftovers
       t << chk
     end
 
-    def truncate_index_name(index_name)
-      index_name[0,63]
-    end
-
     def index_status(idx)
-      old = @old_indexes[truncate_index_name(idx.index_name)]
+      old = @old_indexes[idx.index_name]
       if old
         return old.equals(idx) ? STATUS_EXISTS : STATUS_CHANGED
       else

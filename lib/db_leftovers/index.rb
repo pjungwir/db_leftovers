@@ -39,7 +39,8 @@ module DBLeftovers
     private 
 
     def choose_name(table_name, column_names)
-      "index_#{table_name}_on_#{column_names.join('_and_')}"
+      # Max length in Postgres is 63; in MySQL 64:
+      "index_#{table_name}_on_#{column_names.join('_and_')}"[0,63]
     end
 
   end
