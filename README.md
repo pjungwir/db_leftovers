@@ -120,7 +120,7 @@ and want books to have at least 100 pages, you can change your config file to sa
 and db\_leftovers will notice the changed expression. It will drop and re-add the constraint.
 
 One caveat, however: we pull the current expression from the database, and sometimes Postgres does things like
-add type conversions and extra parentheses. If instance, suppose you said `check :users, :email_length, 'LENGTH(email) > 2'`.
+add type conversions and extra parentheses. For instance, suppose you said `check :users, :email_length, 'LENGTH(email) > 2'`.
 The second time you run db\_leftovers, it will read the expression from Postgres and get `length((email)::text) > 2`,
 and so it will drop and re-create the constraint.
 It will drop and re-create it every time you run the rake task.
