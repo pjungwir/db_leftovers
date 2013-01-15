@@ -459,4 +459,19 @@ describe DBLeftovers do
     EOQ
   end
 
+  it "should not try to change anything on an ignored table" do
+    @db.starts_with([
+      DBLeftovers::Index.new(:books, :shelf_id),
+    ], [
+      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id'),
+      DBLeftovers::ForeignKey.new('fk_books_author_id', 'books', 'author_id', 'authors', 'id')
+    ], [
+      DBLeftovers::Constraint.new(:books_have_positive_pages, :books, 'pages_count > 0')
+    ])
+    DBLeftovers::Definition.define :db_interface => @db do
+      ignore :books
+    end
+    @db.sqls.should have(0).items
+  end
+
 end

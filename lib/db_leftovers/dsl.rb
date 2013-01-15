@@ -10,6 +10,8 @@ module DBLeftovers
       @verbose = !!opts[:verbose]
       @db = opts[:db_interface] || get_database_interface
 
+      @ignored_tables = Set.new
+
       @indexes_by_table = {}      # Set from the DSL
       @old_indexes = @db.lookup_all_indexes
       @new_indexes = {}
@@ -25,6 +27,12 @@ module DBLeftovers
 
     def define(&block)
       instance_eval(&block)
+    end
+
+    def ignore(table_names)
+      table_names = [table_names] unless table_names.is_a? Array
+      table_names = table_names.map{|x| [x.to_s, x.to_sym]}.flatten
+      @ignored_tables = Set.new(table_names)
     end
 
     def table(table_name, &block)
@@ -73,6 +81,7 @@ module DBLeftovers
       # First create any new indexes:
       @indexes_by_table.each do |table_name, indexes|
         indexes.each do |idx|
+          next if ignore_index?(idx)
           # puts "#{idx.table_name}.[#{idx.column_names.join(',')}]"
           case index_status(idx)
           when STATUS_EXISTS
@@ -91,6 +100,7 @@ module DBLeftovers
 
       # Now drop any old indexes that are no longer in the definition file:
       @old_indexes.each do |index_name, idx|
+        next if ignore_index?(idx)
         if not @new_indexes[index_name]
           # puts "#{index_name} #{table_name}"
           @db.execute_drop_index(idx.table_name, index_name)
@@ -103,6 +113,7 @@ module DBLeftovers
       # First create any new foreign keys:
       @foreign_keys_by_table.each do |table_name, fks|
         fks.each do |fk|
+          next if ignore_foreign_key?(fk)
           case foreign_key_status(fk)
           when STATUS_EXISTS
             puts "Foreign Key already exists: #{fk.constraint_name} on #{fk.from_table}" if @verbose
@@ -120,6 +131,7 @@ module DBLeftovers
 
       # Now drop any old foreign keys that are no longer in the definition file:
       @old_foreign_keys.each do |constraint_name, fk|
+        next if ignore_foreign_key?(fk)
         if not @new_foreign_keys[constraint_name]
           @db.execute_drop_foreign_key(constraint_name, fk.from_table, fk.from_column)
           puts "Dropped foreign key: #{constraint_name} on #{fk.from_table}"
@@ -131,6 +143,7 @@ module DBLeftovers
       # First create any new constraints:
       @constraints_by_table.each do |table_name, chks|
         chks.each do |chk|
+          next if ignore_constraint?(chk)
           case constraint_status(chk)
           when STATUS_EXISTS
             puts "Constraint already exists: #{chk.constraint_name} on #{chk.on_table}" if @verbose
@@ -148,6 +161,7 @@ module DBLeftovers
 
       # Now drop any old constraints that are no longer in the definition file:
       @old_constraints.each do |constraint_name, chk|
+        next if ignore_constraint?(chk)
         if not @new_constraints[constraint_name]
           @db.execute_drop_constraint(constraint_name, chk.on_table)
           puts "Dropped CHECK constraint: #{constraint_name} on #{chk.on_table}"
@@ -232,6 +246,18 @@ module DBLeftovers
       else
         raise "Unsupported database: #{db}"
       end
+    end
+
+    def ignore_index?(idx)
+      @ignored_tables.include?(idx.table_name)
+    end
+
+    def ignore_foreign_key?(fk)
+      @ignored_tables.include?(fk.from_table)
+    end
+
+    def ignore_constraint?(chk)
+      @ignored_tables.include?(chk.on_table)
     end
 
   end
