@@ -106,7 +106,7 @@ You can repeat `table` calls for the same table several times if you like. This 
 
 Lets you specify one or more tables you'd like db\_leftovers to ignore completely. No objects will be added/removed to these tables. This is useful if you have tables that shouldn't be managed under db\_leftovers.
 
-If you don't call `ignore`, the list of ignored tables defaults to `schema_migrations` and `delayed_jobs`. If you do call `ignore`, you should probably include those in your list. If you do want db\_leftovers to manage those tables, just say `ignore []`.
+If you don't call `ignore`, the list of ignored tables defaults to `schema_migrations` and `delayed_jobs`. If you do call `ignore`, you should probably include those in your list also. If you want db\_leftovers to manage those tables after all, just say `ignore []`.
 
 
 
