@@ -194,6 +194,12 @@ Contributing to db\_leftovers
 * Make be sure to add tests for it. This is important so I don't break it in a future version unintentionally.
 * Please try not to mess with the Rakefile, version, or history. If you want to have your own version, that is fine, but please isolate that change to its own commit so I can cherry-pick around it.
 
+Commands for building/releasing/installing:
+
+* `rake build`
+* `rake install`
+* `rake release`
+
 Copyright
 ---------
 
