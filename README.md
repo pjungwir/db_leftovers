@@ -102,6 +102,13 @@ The `table` call is just a convenience so you can group all a table's indexes et
 
 You can repeat `table` calls for the same table several times if you like. This lets you put your indexes in one place and your foreign keys in another, for example.
 
+### ignore(table\_name, [table\_name, ...])
+
+Lets you specify one or more tables you'd like db\_leftovers to ignore completely. No objects will be added/removed to these tables. This is useful if you have tables that shouldn't be managed under db\_leftovers.
+
+If you don't call `ignore`, the list of ignored tables defaults to `schema_migrations` and `delayed_jobs`. If you do call `ignore`, you should probably include those in your list. If you do want db\_leftovers to manage those tables, just say `ignore []`.
+
+
 
 Running db\_leftovers
 ---------------------
