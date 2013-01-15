@@ -474,4 +474,20 @@ describe DBLeftovers do
     @db.sqls.should have(0).items
   end
 
+  it "should accept multiple ignored tables" do
+    @db.starts_with([
+      DBLeftovers::Index.new(:books, :shelf_id),
+      DBLeftovers::Index.new(:authors, :last_name),
+    ], [
+      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id'),
+      DBLeftovers::ForeignKey.new('fk_books_author_id', 'books', 'author_id', 'authors', 'id')
+    ], [
+      DBLeftovers::Constraint.new(:books_have_positive_pages, :books, 'pages_count > 0')
+    ])
+    DBLeftovers::Definition.define :db_interface => @db do
+      ignore :books, :authors
+    end
+    @db.sqls.should have(0).items
+  end
+
 end

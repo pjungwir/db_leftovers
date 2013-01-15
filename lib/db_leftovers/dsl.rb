@@ -29,7 +29,7 @@ module DBLeftovers
       instance_eval(&block)
     end
 
-    def ignore(table_names)
+    def ignore(*table_names)
       table_names = [table_names] unless table_names.is_a? Array
       table_names = table_names.map{|x| [x.to_s, x.to_sym]}.flatten
       @ignored_tables = Set.new(table_names)
