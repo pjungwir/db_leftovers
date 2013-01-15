@@ -26,7 +26,6 @@ module DBLeftovers
           AND     t.relkind = 'r'
           AND     n.nspname NOT IN ('pg_catalog', 'pg_toast')
           AND     pg_catalog.pg_table_is_visible(t.oid)
-          AND     t.relname NOT IN ('delayed_jobs', 'schema_migrations')
           AND     NOT ix.indisprimary
           GROUP BY  t.relname,
                     i.relname,

@@ -490,4 +490,14 @@ describe DBLeftovers do
     @db.sqls.should have(0).items
   end
 
+  it "should ignore schema_migrations and delayed_jobs by default" do
+    @db.starts_with([
+      DBLeftovers::Index.new(:schema_migrations, :foo),
+      DBLeftovers::Index.new(:delayed_jobs, :bar),
+    ], [], [])
+    DBLeftovers::Definition.define :db_interface => @db do
+    end
+    @db.sqls.should have(0).items
+  end
+
 end

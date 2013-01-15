@@ -10,7 +10,7 @@ module DBLeftovers
       @verbose = !!opts[:verbose]
       @db = opts[:db_interface] || get_database_interface
 
-      @ignored_tables = Set.new
+      @ignored_tables = Set.new(['delayed_jobs', 'schema_migrations'].map{|x| [x.to_s, x.to_sym]}.flatten)
 
       @indexes_by_table = {}      # Set from the DSL
       @old_indexes = @db.lookup_all_indexes
