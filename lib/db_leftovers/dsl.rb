@@ -239,7 +239,7 @@ module DBLeftovers
     def get_database_interface
       db = ActiveRecord::Base.configurations[Rails.env]['adapter']
       case db
-      when 'postgresql', 'jdbcpostgresql'
+      when 'postgresql', 'jdbcpostgresql', 'postgis'
         DBLeftovers::PostgresDatabaseInterface.new
       when 'mysql2'
         DBLeftovers::MySQLInterface.new
