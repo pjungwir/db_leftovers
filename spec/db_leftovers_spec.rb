@@ -500,4 +500,15 @@ describe DBLeftovers do
     @db.sqls.should have(0).items
   end
 
+  it "should accept `USING` for indexes" do
+    @db.starts_with([], [], [])
+    DBLeftovers::Definition.define :db_interface => @db do
+      index :libraries, :lonlat, using: 'gist'
+    end
+    @db.sqls.should have(1).item
+    @db.should have_seen_sql <<-EOQ
+        CREATE INDEX index_libraries_on_lonlat ON libraries USING gist (lonlat)
+    EOQ
+  end
+
 end

@@ -17,10 +17,12 @@ module DBLeftovers
     def execute_add_index(idx)
       unique = idx.unique? ? 'UNIQUE' : ''
       where = idx.where_clause.present? ? "WHERE #{idx.where_clause}" : ''
+      using = idx.using_clause.present? ? "USING #{idx.using_clause}" : ''
 
       sql = <<-EOQ
         CREATE #{unique} INDEX #{idx.index_name}
         ON #{idx.table_name}
+        #{using}
         (#{idx.column_names.join(', ')})
         #{where}
       EOQ

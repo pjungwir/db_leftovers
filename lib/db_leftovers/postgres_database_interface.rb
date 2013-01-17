@@ -15,6 +15,7 @@ module DBLeftovers
                   i.relname AS index_name,
                   ix.indisunique AS is_unique,
                   array_to_string(ix.indkey, ',') AS column_numbers,
+                  array_to_string(ix.indclass, ',') AS op_numbers,
                   pg_get_expr(ix.indpred, ix.indrelid) AS where_clause
           FROM    pg_class t,
                   pg_class i,
@@ -33,16 +34,20 @@ module DBLeftovers
                     ix.indexrelid,
                     ix.indrelid,
                     ix.indkey,
+                    ix.indclass,
                     ix.indpred
           ORDER BY t.relname, i.relname
       EOQ
-      @conn.select_rows(sql).each do |indexrelid, indrelid, table_name, index_name, is_unique, column_numbers, where_clause|
+      @conn.select_rows(sql).each do |indexrelid, indrelid, table_name, index_name, is_unique, column_numbers, op_numbers, where_clause|
         where_clause = remove_outer_parens(where_clause) if where_clause
+        index_method = index_method_for_op(op_numbers.split(",").first)
+        index_method = nil if index_method == 'btree'
         ret[index_name] = Index.new(
           table_name,
           column_names_for_index(indrelid, column_numbers.split(",")),
           unique: is_unique == 't',
           where: where_clause,
+          using: index_method,
           name: index_name
         )
       end
@@ -131,6 +136,15 @@ module DBLeftovers
         EOQ
         @conn.select_value(sql)
       end
+    end
+
+    def index_method_for_op(op_id)
+      @conn.select_value(<<-EOQ)
+          SELECT  am.amname
+          FROM    pg_opclass op, pg_am am
+          WHERE   op.oid = #{op_id}
+          AND     op.opcmethod = am.oid
+      EOQ
     end
 
     def remove_outer_parens(str)
