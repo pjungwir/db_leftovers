@@ -52,6 +52,8 @@ This ensures that you have an index on the given table and column(s). The `colum
 
 * `:where` Accepts SQL to include in the `WHERE` part of the `CREATE INDEX` command, in case you want to limit the index to a subset of the table's rows.
 
+* `:using` Lets you specify what kind of index to create. Default is `btree`, but if you're on Postgres you might also want `gist`, `gin`, or `hash`.
+
 #### Examples
 
     index :books, :author_id
