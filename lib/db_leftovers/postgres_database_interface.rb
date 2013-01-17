@@ -15,12 +15,13 @@ module DBLeftovers
                   i.relname AS index_name,
                   ix.indisunique AS is_unique,
                   array_to_string(ix.indkey, ',') AS column_numbers,
-                  array_to_string(ix.indclass, ',') AS op_numbers,
+                  am.amname AS index_type,
                   pg_get_expr(ix.indpred, ix.indrelid) AS where_clause
           FROM    pg_class t,
                   pg_class i,
                   pg_index ix,
-                  pg_namespace n
+                  pg_namespace n,
+                  pg_am am
           WHERE   t.oid = ix.indrelid
           AND     n.oid = t.relnamespace
           AND     i.oid = ix.indexrelid
@@ -28,19 +29,19 @@ module DBLeftovers
           AND     n.nspname NOT IN ('pg_catalog', 'pg_toast')
           AND     pg_catalog.pg_table_is_visible(t.oid)
           AND     NOT ix.indisprimary
+          AND     i.relam = am.oid
           GROUP BY  t.relname,
                     i.relname,
                     ix.indisunique,
                     ix.indexrelid,
                     ix.indrelid,
                     ix.indkey,
-                    ix.indclass,
+                    am.amname,
                     ix.indpred
           ORDER BY t.relname, i.relname
       EOQ
-      @conn.select_rows(sql).each do |indexrelid, indrelid, table_name, index_name, is_unique, column_numbers, op_numbers, where_clause|
+      @conn.select_rows(sql).each do |indexrelid, indrelid, table_name, index_name, is_unique, column_numbers, index_method, where_clause|
         where_clause = remove_outer_parens(where_clause) if where_clause
-        index_method = index_method_for_op(op_numbers.split(",").first)
         index_method = nil if index_method == 'btree'
         ret[index_name] = Index.new(
           table_name,
@@ -136,15 +137,6 @@ module DBLeftovers
         EOQ
         @conn.select_value(sql)
       end
-    end
-
-    def index_method_for_op(op_id)
-      @conn.select_value(<<-EOQ)
-          SELECT  am.amname
-          FROM    pg_opclass op, pg_am am
-          WHERE   op.oid = #{op_id}
-          AND     op.opcmethod = am.oid
-      EOQ
     end
 
     def remove_outer_parens(str)
