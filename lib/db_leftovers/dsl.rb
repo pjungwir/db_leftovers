@@ -41,8 +41,6 @@ module DBLeftovers
     end
 
     def index(table_name, column_names, opts={})
-      column_names = [column_names].flatten
-      # puts "#{table_name}.[#{column_names.join(',')}]"
       add_index(Index.new(table_name, column_names, opts))
     end
 

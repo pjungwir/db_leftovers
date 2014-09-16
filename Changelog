@@ -1,7 +1,12 @@
+1.4.2
+-----
+
+- Fixed problem with dropping and re-creating indexes every time.
+
 1.4.1
 -----
 
-- Improved feedback so we print the expression on functional indexes
+- Improved feedback so we print the expression on functional indexes.
 
 
 1.4.0

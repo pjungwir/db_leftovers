@@ -15,8 +15,8 @@ module DBLeftovers
       opts.keys.each do |k|
         raise "Unknown option: #{k}" unless [:where, :function, :unique, :using, :name].include?(k)
       end
-      if column_names.is_a?(Array) and column_names[0].is_a?(String) and opts[:function].nil?
-        opts[:function] = column_names[0]
+      if column_names.is_a?(String) and opts[:function].nil?
+        opts[:function] = column_names
         column_names = []
       end
       @table_name = table_name.to_s

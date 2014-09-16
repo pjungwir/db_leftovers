@@ -110,7 +110,7 @@ describe DBLeftovers::PostgresDatabaseInterface do
       @db.lookup_all_indexes.keys.sort.should == ['index_authors_on_lower_name']
     end
 
-    it "should allow functional indexes specified with an option" do
+    it "should allow functional indexes specified with an option", focus: true do
       DBLeftovers::Definition.define :db_interface => @db do
         index :authors, [], function: 'lower(name)'
       end
