@@ -138,7 +138,7 @@ The second time you run db\_leftovers, it will read the expression from Postgres
 and so it will drop and re-create the constraint.
 It will drop and re-create it every time you run the rake task.
 To get around this, make sure your config file uses the same expression as printed by db\_leftovers in the rake output.
-This can also happen for index WHERE clauses, fixable by a similar workaround.
+This can also happen for index WHERE clauses and functional indexes, fixable by a similar workaround.
 MySQL doesn't have this problem because it doesn't support CHECK constraints or index WHERE clauses.
 
 To print messages even about indexes/foreign keys/constraints that haven't changed, you can say:

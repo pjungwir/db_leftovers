@@ -173,14 +173,21 @@ module DBLeftovers
 
     def log_new_index(idx, altered=false)
       did_what = altered ? "Dropped & re-created" : "Created"
-      if idx.where_clause
+
+      msg = "#{did_what} index: #{idx.index_name} on #{idx.table_name}"
+      if idx.index_function 
         # NB: This is O(n*m) where n is your indexes and m is your indexes with WHERE clauses.
         #     But it's hard to believe it matters:
         new_idx = @db.lookup_all_indexes[idx.index_name]
-        puts "#{did_what} index: #{idx.index_name} on #{idx.table_name} WHERE #{new_idx.where_clause}"
-      else
-        puts "#{did_what} index: #{idx.index_name} on #{idx.table_name}"
+        msg = "#{msg}: #{new_idx.index_function}"
       end
+
+      if idx.where_clause
+        new_idx ||= @db.lookup_all_indexes[idx.index_name]
+        msg = "#{msg} WHERE #{new_idx.where_clause}"
+      end
+
+      puts msg
     end
 
     def log_new_constraint(chk, altered=false)

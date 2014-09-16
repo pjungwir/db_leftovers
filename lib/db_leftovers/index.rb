@@ -15,8 +15,8 @@ module DBLeftovers
       opts.keys.each do |k|
         raise "Unknown option: #{k}" unless [:where, :function, :unique, :using, :name].include?(k)
       end
-      if column_names.is_a?(String) and opts[:function].nil?
-        opts[:function] = column_names
+      if column_names.is_a?(Array) and column_names[0].is_a?(String) and opts[:function].nil?
+        opts[:function] = column_names[0]
         column_names = []
       end
       @table_name = table_name.to_s
@@ -25,7 +25,7 @@ module DBLeftovers
       @index_function = opts[:function]
       @using_clause = opts[:using]
       @unique = !!opts[:unique]
-      @index_name = (opts[:name] || choose_name(@table_name, @column_names)).to_s
+      @index_name = (opts[:name] || choose_name(@table_name, @column_names, @index_function)).to_s
 
       raise "Indexes need a table!" unless @table_name
       raise "Indexes need at least column or an expression!" unless (@column_names.any? or @index_function)
@@ -52,7 +52,7 @@ module DBLeftovers
 
     private 
 
-    def choose_name(table_name, column_names)
+    def choose_name(table_name, column_names, index_function)
       topic = if column_names.any?
                 column_names.join("_and_")
               else
