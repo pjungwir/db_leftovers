@@ -44,7 +44,7 @@ Within the DSL file, the following methods are supported:
 
 ### index(table\_name, columns, [opts])
 
-This ensures that you have an index on the given table and column(s). The `columns` parameter can be either a string/symbol or a list of strings/symbols. Opts is a hash with the following possible keys:
+This ensures that you have an index on the given table and column(s). The `columns` parameter can be either a symbol or a list of strings/symbols. (If you pass a single string for the `columns` parameter, it will be treated as the expression for a functional index rather than a column name.) Opts is a hash with the following possible keys:
 
 * `:name` The name of the index. Defaults to `index_`*table\_name*`_on_`*column\_names*, like the `add_index` method from Rails migrations.
 
@@ -54,11 +54,15 @@ This ensures that you have an index on the given table and column(s). The `colum
 
 * `:using` Lets you specify what kind of index to create. Default is `btree`, but if you're on Postgres you might also want `gist`, `gin`, or `hash`.
 
+* `:function` Lets you specify an expression rather than a list of columns. If you give this option, you should pass an empty list of column names. Alternately, you can pass a string as the column name (rather than a symbol), and db\_leftovers will interpret it as a function.
+
 #### Examples
 
     index :books, :author_id
     index :books, [:publisher_id, :published_at]
     index :books, :isbn, :unique => true
+    index :authors, [], function: 'lower(name)'
+    index :authors, 'lower(name)'
 
 ### foreign\_key(from\_table, [from\_column], to\_table, [to\_column], [opts])
 

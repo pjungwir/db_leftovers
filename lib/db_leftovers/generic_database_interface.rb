@@ -23,7 +23,7 @@ module DBLeftovers
         CREATE #{unique} INDEX #{idx.index_name}
         ON #{idx.table_name}
         #{using}
-        (#{idx.column_names.join(', ')})
+        (#{idx.index_function || idx.column_names.join(', ')})
         #{where}
       EOQ
       execute_sql(sql)

@@ -16,7 +16,8 @@ module DBLeftovers
                   ix.indisunique AS is_unique,
                   array_to_string(ix.indkey, ',') AS column_numbers,
                   am.amname AS index_type,
-                  pg_get_expr(ix.indpred, ix.indrelid) AS where_clause
+                  pg_get_expr(ix.indpred, ix.indrelid) AS where_clause,
+                  pg_get_expr(ix.indexprs, ix.indrelid) AS index_function
           FROM    pg_class t,
                   pg_class i,
                   pg_index ix,
@@ -37,10 +38,11 @@ module DBLeftovers
                     ix.indrelid,
                     ix.indkey,
                     am.amname,
-                    ix.indpred
+                    ix.indpred,
+                    ix.indexprs
           ORDER BY t.relname, i.relname
       EOQ
-      @conn.select_rows(sql).each do |indexrelid, indrelid, table_name, index_name, is_unique, column_numbers, index_method, where_clause|
+      @conn.select_rows(sql).each do |indexrelid, indrelid, table_name, index_name, is_unique, column_numbers, index_method, where_clause, index_function|
         where_clause = remove_outer_parens(where_clause) if where_clause
         index_method = nil if index_method == 'btree'
         ret[index_name] = Index.new(
@@ -48,6 +50,7 @@ module DBLeftovers
           column_names_for_index(indrelid, column_numbers.split(",")),
           unique: is_unique == 't',
           where: where_clause,
+          function: index_function,
           using: index_method,
           name: index_name
         )
@@ -128,6 +131,7 @@ module DBLeftovers
     private
 
     def column_names_for_index(table_id, column_numbers)
+      return [] if column_numbers == ['0']
       column_numbers.map do |c|
         sql = <<-EOQ
             SELECT  attname

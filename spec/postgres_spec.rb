@@ -102,6 +102,22 @@ describe DBLeftovers::PostgresDatabaseInterface do
       @db.lookup_all_constraints['books_have_positive_pages'].check.should == 'pages_count > 12'
     end
 
+    it "should allow functional indexes, specified as a string" do
+      DBLeftovers::Definition.define :db_interface => @db do
+        index :authors, 'lower(name)'
+      end
+      @db.lookup_all_indexes.size.should == 1
+      @db.lookup_all_indexes.keys.sort.should == ['index_authors_on_lower_name']
+    end
+
+    it "should allow functional indexes, specified with an option" do
+      DBLeftovers::Definition.define :db_interface => @db do
+        index :authors, [], function: 'lower(name)'
+      end
+      @db.lookup_all_indexes.size.should == 1
+      @db.lookup_all_indexes.keys.sort.should == ['index_authors_on_lower_name']
+    end
+
   end
 end
 
