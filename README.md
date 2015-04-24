@@ -5,7 +5,7 @@ Db\_leftovers lets you define indexes, foreign keys, and CHECK constraints for y
 in one place using an easy-to-read DSL,
 then run a rake task to bring your database up-to-date.
 Whenever you edit the DSL, you can re-run the rake task and db\_leftovers will alter your database accordingly.
-This is useful because of the following limitations in vanilla Rails:
+This is useful because of the following limitations in vanilla Rails (note that very recently Rails has started to add some of these, e.g. `add_foreign_key`):
 
   * There are no built-in migration methods to create foreign keys or CHECK constraints.
   * Even if created, foreign keys and CHECK constraints won't appear in your schema.rb.
