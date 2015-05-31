@@ -68,7 +68,7 @@ module DBLeftovers
         to_column = :id
       end
 
-      add_foreign_key(ForeignKey.new(name_constraint(from_table, from_column), from_table, from_column, to_table, to_column, opts))
+      add_foreign_key(ForeignKey.new(from_table, from_column, to_table, to_column, opts))
     end
 
     def check(table_name, constraint_name, check_expression)
@@ -235,10 +235,6 @@ module DBLeftovers
       else
         return STATUS_NEW
       end
-    end
-
-    def name_constraint(from_table, from_column)
-      "fk_#{from_table}_#{from_column}"
     end
 
     def get_database_interface

@@ -222,7 +222,7 @@ describe DBLeftovers do
 
   it "should not create foreign keys when they already exist" do
     @db.starts_with([], [
-      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id')
+      DBLeftovers::ForeignKey.new('books', 'shelf_id', 'shelves', 'id')
     ])
     DBLeftovers::Definition.define :db_interface => @db do
       foreign_key :books, :shelf_id, :shelves
@@ -234,7 +234,7 @@ describe DBLeftovers do
 
   it "should not create table-prefixed foreign keys when they already exist" do
     @db.starts_with([], [
-      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id')
+      DBLeftovers::ForeignKey.new('books', 'shelf_id', 'shelves', 'id')
     ])
     DBLeftovers::Definition.define :db_interface => @db do
       table :books do
@@ -264,8 +264,8 @@ describe DBLeftovers do
 
   it "should drop foreign keys when they are removed from the definition" do
     @db.starts_with([], [
-      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id'),
-      DBLeftovers::ForeignKey.new('fk_books_author_id', 'books', 'author_id', 'authors', 'id')
+      DBLeftovers::ForeignKey.new('books', 'shelf_id', 'shelves', 'id'),
+      DBLeftovers::ForeignKey.new('books', 'author_id', 'authors', 'id')
     ])
     DBLeftovers::Definition.define :db_interface => @db do
       foreign_key :books, :shelf_id, :shelves
@@ -280,8 +280,8 @@ describe DBLeftovers do
 
   it "should create foreign keys when they have been redefined" do
     @db.starts_with([], [
-      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id'),
-      DBLeftovers::ForeignKey.new('fk_books_author_id', 'books', 'author_id', 'authors', 'id')
+      DBLeftovers::ForeignKey.new('books', 'shelf_id', 'shelves', 'id'),
+      DBLeftovers::ForeignKey.new('books', 'author_id', 'authors', 'id')
     ])
     DBLeftovers::Definition.define :db_interface => @db do
       table :books do
@@ -463,8 +463,8 @@ describe DBLeftovers do
     @db.starts_with([
       DBLeftovers::Index.new(:books, :shelf_id),
     ], [
-      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id'),
-      DBLeftovers::ForeignKey.new('fk_books_author_id', 'books', 'author_id', 'authors', 'id')
+      DBLeftovers::ForeignKey.new('books', 'shelf_id', 'shelves', 'id'),
+      DBLeftovers::ForeignKey.new('books', 'author_id', 'authors', 'id')
     ], [
       DBLeftovers::Constraint.new(:books_have_positive_pages, :books, 'pages_count > 0')
     ])
@@ -479,8 +479,8 @@ describe DBLeftovers do
       DBLeftovers::Index.new(:books, :shelf_id),
       DBLeftovers::Index.new(:authors, :last_name),
     ], [
-      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id'),
-      DBLeftovers::ForeignKey.new('fk_books_author_id', 'books', 'author_id', 'authors', 'id')
+      DBLeftovers::ForeignKey.new('books', 'shelf_id', 'shelves', 'id'),
+      DBLeftovers::ForeignKey.new('books', 'author_id', 'authors', 'id')
     ], [
       DBLeftovers::Constraint.new(:books_have_positive_pages, :books, 'pages_count > 0')
     ])

@@ -69,11 +69,15 @@ This ensures that you have an index on the given table and column(s). The `colum
 This ensures that you have a foreign key relating the given tables and columns.
 All parameters are strings/symbols except `opts`, which is a hash.
 If you omit the column names, db\_leftovers will infer them based on Rails conventions. (See examples below.)
-The only option that is supported is `:on_delete`, which may have any of these values:
+Opts is a hash with the following possible keys:
 
-* `nil` Indicates that attempting to delete the referenced row should fail (the default).
-* `:set_null` Indicates that the foreign key should be set to null if the referenced row is deleted.
-* `:cascade` Indicates that the referencing row should be deleted if the referenced row is deleted.
+* `:name` The name of the foreign key. Defaults to `fk_`*from\_table*`_`*from\_column*`.
+
+* `:on_delete` Sets the behavior when a row is deleted and other rows reference it. It may have any of these values:
+
+  * `nil` Indicates that attempting to delete the referenced row should fail (the default).
+  * `:set_null` Indicates that the foreign key should be set to null if the referenced row is deleted.
+  * `:cascade` Indicates that the referencing row should be deleted if the referenced row is deleted.
 
 #### Examples
 

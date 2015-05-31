@@ -117,8 +117,8 @@ shared_examples_for "DatabaseInterface" do
 
   it "should drop foreign keys when they are removed from the definition" do
     starts_with(@db, [], [
-      DBLeftovers::ForeignKey.new('fk_books_shelf_id', 'books', 'shelf_id', 'shelves', 'id'),
-      DBLeftovers::ForeignKey.new('fk_books_author_id', 'books', 'author_id', 'authors', 'id')
+      DBLeftovers::ForeignKey.new('books', 'shelf_id', 'shelves', 'id'),
+      DBLeftovers::ForeignKey.new('books', 'author_id', 'authors', 'id')
     ])
     DBLeftovers::Definition.define :db_interface => @db do
       foreign_key :books, :shelf_id, :shelves
@@ -146,6 +146,29 @@ shared_examples_for "DatabaseInterface" do
     DBLeftovers::Definition.define :db_interface => @db do
     end
     @db.lookup_all_indexes.size.should == 0
+  end
+
+  
+  it "should create foreign keys with a custom name" do
+    DBLeftovers::Definition.define :db_interface => @db do
+      foreign_key :books, :shelf_id, :shelves, :name => "fk_where_it_is"
+      foreign_key :books, :publisher_id, :publishers, :id, :on_delete => :set_null, :name => "fk_who_published_it"
+      foreign_key :books, :author_id, :authors, :id, :on_delete => :cascade, :name => "fk_who_wrote_it"
+    end
+    @db.lookup_all_foreign_keys.size.should == 3
+    @db.lookup_all_foreign_keys.keys.sort.should == ['fk_where_it_is', 'fk_who_published_it', 'fk_who_wrote_it']
+  end
+
+
+  it "should drop foreign keys when they are removed from the definition" do
+    starts_with(@db, [], [
+      DBLeftovers::ForeignKey.new('books', 'shelf_id', 'shelves', 'id', :name => "fk_where_it_is"),
+      DBLeftovers::ForeignKey.new('books', 'author_id', 'authors', 'id', :name => "fk_who_wrote_it")
+    ])
+    DBLeftovers::Definition.define :db_interface => @db do
+      foreign_key :books, :shelf_id, :shelves, :name => "fk_where_it_is"
+    end
+    @db.lookup_all_foreign_keys.size.should == 1
   end
 
 

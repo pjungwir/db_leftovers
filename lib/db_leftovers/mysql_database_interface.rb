@@ -57,7 +57,7 @@ module DBLeftovers
                    when 'SET NULL'; :set_null
                    else; raise "Unknown del type: #{del_type}"
                    end
-        ret[constr_name] = ForeignKey.new(constr_name, from_table, from_column, to_table, to_column, :on_delete => del_type)
+        ret[constr_name] = ForeignKey.new(from_table, from_column, to_table, to_column, :name => constr_name, :on_delete => del_type)
       end
       return ret
     end

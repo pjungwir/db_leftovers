@@ -3,17 +3,18 @@ module DBLeftovers
   class ForeignKey
     attr_accessor :constraint_name, :from_table, :from_column, :to_table, :to_column, :set_null, :cascade
 
-    def initialize(constraint_name, from_table, from_column, to_table, to_column, opts={})
+    def initialize(from_table, from_column, to_table, to_column, opts={})
       opts = {
-        :on_delete => nil
+        :on_delete => nil,
+        :name => name_constraint(from_table, from_column)
       }.merge(opts)
       opts.keys.each do |k|
         raise "`:set_null => true` should now be `:on_delete => :set_null`" if k.to_s == 'set_null'
         raise "`:cascade => true` should now be `:on_delete => :cascade`"   if k.to_s == 'cascade'
-        raise "Unknown option: #{k}" unless [:on_delete].include?(k)
+        raise "Unknown option: #{k}" unless [:on_delete, :name].include?(k)
       end
       raise "Unknown on_delete option: #{opts[:on_delete]}" unless [nil, :set_null, :cascade].include?(opts[:on_delete])
-      @constraint_name = constraint_name.to_s
+      @constraint_name = opts[:name].to_s
       @from_table = from_table.to_s
       @from_column = from_column.to_s
       @to_table = to_table.to_s
@@ -37,6 +38,10 @@ module DBLeftovers
 
     def to_s
       "<#{@constraint_name}: from #{@from_table}.#{@from_column} to #{@to_table}.#{@to_column} #{if @set_null; "ON DELETE SET NULL "; elsif @cascade; "ON DELETE CASCADE "; else ""; end}>"
+    end
+
+    def name_constraint(from_table, from_column)
+      "fk_#{from_table}_#{from_column}"
     end
 
   end
