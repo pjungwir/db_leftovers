@@ -79,6 +79,12 @@ Opts is a hash with the following possible keys:
   * `:set_null` Indicates that the foreign key should be set to null if the referenced row is deleted.
   * `:cascade` Indicates that the referencing row should be deleted if the referenced row is deleted.
 
+* `:deferrable` Marks the constraint as deferrable. Accepts these values:
+
+  * `nil` Indicates the constraint is not deferrable (the default).
+  * `:immediate` Indicates the constraint is usually enforced immediately but can be deferred.
+  * `:deferred` Indicates the constraint is always enforced deferred.
+
 #### Examples
 
     foreign_key :books, :author_id, :authors, :id
@@ -89,7 +95,7 @@ With implicit column names:
     foreign_key :books, :authors
     foreign_key :books, :authors, :on_delete => :cascade
     foreign_key :books, :co_author_id, :authors
-    foreign_key :books, :co_author_id, :authors, :on_delete => :cascade
+    foreign_key :books, :co_author_id, :authors, :on_delete => :cascade, :deferred => :immediate
 
 ### check(on\_table, constraint\_name, expression)
 

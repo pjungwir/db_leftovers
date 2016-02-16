@@ -72,9 +72,9 @@ describe DBLeftovers do
   it "should create foreign keys on an empty database" do
     @db.starts_with
     DBLeftovers::Definition.define :db_interface => @db do
-      foreign_key :books, :shelf_id, :shelves
+      foreign_key :books, :shelf_id, :shelves, :deferrable => :deferred
       foreign_key :books, :publisher_id, :publishers, :id, :on_delete => :set_null
-      foreign_key :books, :author_id, :authors, :id, :on_delete => :cascade
+      foreign_key :books, :author_id, :authors, :id, :on_delete => :cascade, :deferrable => :immediate
     end
     @db.sqls.should have(3).items
     @db.should have_seen_sql <<-EOQ
@@ -82,6 +82,7 @@ describe DBLeftovers do
         ADD CONSTRAINT fk_books_shelf_id
         FOREIGN KEY (shelf_id)
         REFERENCES shelves (id)
+        DEFERRABLE INITIALLY DEFERRED
     EOQ
     @db.should have_seen_sql <<-EOQ
         ALTER TABLE books
@@ -96,6 +97,7 @@ describe DBLeftovers do
         FOREIGN KEY (author_id)
         REFERENCES authors (id)
         ON DELETE CASCADE
+        DEFERRABLE INITIALLY IMMEDIATE
     EOQ
   end
 
@@ -105,9 +107,9 @@ describe DBLeftovers do
     @db.starts_with
     DBLeftovers::Definition.define :db_interface => @db do
       table :books do
-        foreign_key :shelf_id, :shelves
+        foreign_key :shelf_id, :shelves, :deferrable => :deferred
         foreign_key :publisher_id, :publishers, :id, :on_delete => :set_null
-        foreign_key :author_id, :authors, :id, :on_delete => :cascade
+        foreign_key :author_id, :authors, :id, :on_delete => :cascade, :deferrable => :immediate
       end
     end
     @db.sqls.should have(3).items
@@ -116,6 +118,7 @@ describe DBLeftovers do
         ADD CONSTRAINT fk_books_shelf_id
         FOREIGN KEY (shelf_id)
         REFERENCES shelves (id)
+        DEFERRABLE INITIALLY DEFERRED
     EOQ
     @db.should have_seen_sql <<-EOQ
         ALTER TABLE books
@@ -130,6 +133,7 @@ describe DBLeftovers do
         FOREIGN KEY (author_id)
         REFERENCES authors (id)
         ON DELETE CASCADE
+        DEFERRABLE INITIALLY IMMEDIATE
     EOQ
   end
 

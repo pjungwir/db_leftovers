@@ -37,13 +37,16 @@ module DBLeftovers
     end
 
     def execute_add_foreign_key(fk)
-      on_delete = "ON DELETE CASCADE" if fk.cascade
+      on_delete = "ON DELETE CASCADE"  if fk.cascade
       on_delete = "ON DELETE SET NULL" if fk.set_null
+      deferrable = "DEFERRABLE INITIALLY DEFERRED"  if fk.deferrable_initially_deferred
+      deferrable = "DEFERRABLE INITIALLY IMMEDIATE" if fk.deferrable_initially_immediate
       execute_sql %{ALTER TABLE #{fk.from_table}
                 ADD CONSTRAINT #{fk.constraint_name}
                 FOREIGN KEY (#{fk.from_column})
                 REFERENCES #{fk.to_table} (#{fk.to_column})
-                #{on_delete}}
+                #{on_delete}
+                #{deferrable}}
     end
 
     def execute_drop_foreign_key(constraint_name, from_table, from_column)

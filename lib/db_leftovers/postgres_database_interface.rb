@@ -70,7 +70,9 @@ module DBLeftovers
                   a1.attname AS from_column,
                   t2.relname AS to_table,
                   a2.attname AS to_column,
-                  c.confdeltype
+                  c.confdeltype,
+                  c.condeferrable AS deferrable,
+                  c.condeferred AS deferred
           FROM    pg_catalog.pg_constraint c,
                   pg_catalog.pg_class t1,
                   pg_catalog.pg_class t2,
@@ -94,14 +96,20 @@ module DBLeftovers
           AND     pg_catalog.pg_table_is_visible(t1.oid)
           AND     pg_catalog.pg_table_is_visible(t2.oid)
       EOQ
-      @conn.select_rows(sql).each do |constr_name, from_table, from_column, to_table, to_column, del_type|
+      @conn.select_rows(sql).each do |constr_name, from_table, from_column, to_table, to_column, del_type, deferrable, deferred|
         del_type = case del_type
                    when 'a'; nil
                    when 'c'; :cascade
                    when 'n'; :set_null
                    else; raise "Unknown del type: #{del_type}"
                    end
-        ret[constr_name] = ForeignKey.new(from_table, from_column, to_table, to_column, :name => constr_name, :on_delete => del_type)
+        deferrable = deferrable == 't'
+        deferred   = deferred == 't'
+        defer_type = if deferrable and deferred; :deferred
+                     elsif deferrable; :immediate
+                     else; nil
+                     end
+        ret[constr_name] = ForeignKey.new(from_table, from_column, to_table, to_column, :name => constr_name, :on_delete => del_type, :deferrable => defer_type)
       end
       return ret
     end
